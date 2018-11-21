@@ -25,7 +25,7 @@ SECRET_KEY = '7hv4f0ouw@aj1gtksutos-af)2@i&@b&i1+671l31sdhi(+^00'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 ASGI_APPLICATION = 'kvmvdi.routing.application'
 
 
