@@ -224,7 +224,7 @@ def instances(request):
                         mail_subject = 'Thông tin server của bạn là: '
                         message = render_to_string('client/send_info_server.html', {
                             'user': user,
-                            'IP': connect.get_server(serverVM.id).networks['provider'][0]
+                            'IP': connect.get_server(serverVM.id).networks[NET_provider][0]
                             # 'IP': 'fasdfasdfasdfew'
                         })
                         to_email = user.email
