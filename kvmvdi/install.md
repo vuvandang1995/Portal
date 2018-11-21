@@ -20,7 +20,7 @@ sudo apt-get install -y git nginx redis-server
 ### Tải source code và cài các gói cần thiết để chạy code 
 ```
 git clone https://github.com/vuvandang1995/Portal.git
-cd Portal
+cd Portal/kvmvdi
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 sudo pip3 install -r requirements.txt
