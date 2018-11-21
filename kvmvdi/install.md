@@ -6,6 +6,16 @@ sudo apt-get install -y python3-pip
 sudo apt-get install -y python3.5-dev libmysqlclient-dev  memcached libffi-dev libssl-dev
 sudo apt-get install -y git nginx redis-server
 ```
+### Cấu hình MySQL server
+- cài đặt `sudo apt-get install -y mysql-server` (điền mật khẩu cho tài khoản root)
+- đăng nhập vào mysql: `mysql -u root -p` (nhập mật khẩu đã tạo lúc dài đặt)
+- tạo database: `CREATE DATABASE kvm_vdi CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
+- tạo tài khoản: `CREATE USER 'portal'@'%' IDENTIFIED BY '123456';`
+- phân quyền: `GRANT ALL PRIVILEGES ON kvm_vdi . * TO 'portal'@'%';`
+- cập nhật: `FLUSH PRIVILEGES;`
+- thoát: `exit;`
+- thay 127.0.0.1 bằng IP của SQL server vào file `sudo vim /etc/mysql/mysql.conf.d/mysqld.cnf`
+- restart `sudo /etc/init.d/mysql restart`
 
 ### Tải source code và cài các gói cần thiết để chạy code 
 ```
