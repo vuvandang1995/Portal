@@ -1,0 +1,12 @@
+django==2.1.2
+gunicorn
+channels
+channels_redis
+simplejson
+mysqlclient
+python-novaclient
+python-neutronclient
+python-keystoneclient
+python-cinderclient
+django-cryptography
+cryptography
