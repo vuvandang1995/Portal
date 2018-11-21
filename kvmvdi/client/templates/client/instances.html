@@ -289,11 +289,15 @@
 {% endif %}
 {% endblock content %}
 {% block js %}
+<script>
+    var ops_ip = {{ip_ops}};
+</script>
 <script src="{% static 'js/base-js/datatables.min.js' %}"></script>
 <script src="{% static 'js/portal/createinstance.js' %}"></script>
 <script src="{% static 'js/client/home_client.js' %}"></script>
 <script src="{% static 'js/client/createVM_client.js' %}"></script>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' rel='stylesheet' type='text/css'>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+
 
 {% endblock %}

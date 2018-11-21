@@ -362,7 +362,8 @@ def instances(request):
         return render(request, 'client/instances.html',{'username': mark_safe(json.dumps(user.username)),
                                 'OPS_IP': OPS_IP,
                                 'DISK_SSD': DISK_SSD,
-                                'DISK_HDD': DISK_HDD
+                                'DISK_HDD': DISK_HDD,
+                                'ip_ops': mark_safe(json.dumps(OPS_IP))
                                 })
     else:
         return HttpResponseRedirect('/')

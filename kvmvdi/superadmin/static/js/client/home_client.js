@@ -3,7 +3,7 @@ $(document).ready(function(){
         $(this).DataTable({
             "ajax": {
                 "type": "GET",
-                "url": "/client/home_data_192.168.40.11",
+                "url": "/client/home_data_"+ops_ip,
                 "contentType": "application/json; charset=utf-8",
                 "data": function(result){
                     return JSON.stringify(result);
