@@ -397,7 +397,9 @@
             $('.image_select').find('label').remove();
             var i;
             for (i=1; i<message.length; i++){
-                var element = `<label>
+                var element;
+                if (message[i].includes("centos")){
+                    element = `<label>
                                     <input type="radio" name="image" value="`+message[i]+`">
                                     <div class='all row'>
                                         <div class='col-md-5'>
@@ -410,6 +412,36 @@
                                         </div>
                                     </div>
                                 </label>`;
+                }else if (message[i].includes("u14")){
+                    element = `<label>
+                                    <input type="radio" name="image" value="`+message[i]+`">
+                                    <div class='all row'>
+                                        <div class='col-md-5'>
+                                            <img src="{% static 'images/portal/img/ubuntu_logo.png' %}" alt="">
+                                        </div>
+                                        <di class='col-md-7 bootSource'>
+                                            <span>
+                                                `+message[i]+`
+                                            </span>
+                                        </div>
+                                    </div>
+                                </label>`;
+                }else {
+                    element = `<label>
+                                    <input type="radio" name="image" value="`+message[i]+`">
+                                    <div class='all row'>
+                                        <div class='col-md-5'>
+                                            <img src="{% static 'images/portal/img/ubuntu_logo.png' %}" alt="">
+                                        </div>
+                                        <di class='col-md-7 bootSource'>
+                                            <span>
+                                                `+message[i]+`
+                                            </span>
+                                        </div>
+                                    </div>
+                                </label>`;
+                }
+                
                 /*var element = '<option value="'+message[i]+'">'+message[i]+'</option>';*/
                 $(".image_select").append(element);
             }
