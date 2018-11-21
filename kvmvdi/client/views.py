@@ -25,7 +25,7 @@ from superadmin.plugin.keystoneclient import keystone
 from superadmin.plugin.get_tokens import getToken
 
 from django.utils import timezone
-from kvmvdi.settings import OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT, NET_provider, NET_SELF, DISK_HDD, DISK_SSD
+from kvmvdi.settings import OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT, NET_provider, NET_SELF, DISK_HDD, DISK_SSD, OPS_TOKEN_EXPIRED
 import time
 
                 
