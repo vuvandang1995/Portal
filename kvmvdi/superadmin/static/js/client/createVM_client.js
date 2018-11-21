@@ -9,7 +9,7 @@ $(document).ready(function(){
         var image;
         var flavor;
         var sshkey;
-        $('.image_select').find('label').children().each(function() {
+        $('.image_select input[name="image"]').each(function() {
             if ($(this).is(':checked')){
                 image = $(this).val();
             }
@@ -37,10 +37,13 @@ $(document).ready(function(){
         var count = $("input[name=count]").val();
         var price = $("input[name=price]").val();
         swal({
-            type: 'info',
+            imageUrl: '/static/images/spinner-sample.gif',
+            imageHeight: 120,
+            imageAlt: 'wait',
             title: "Please wait...",
             showConfirmButton: false
         });
+        document.getElementById("close_modal").click();
         $.ajax({
             type:'POST',
             url:location.href,
@@ -52,7 +55,6 @@ $(document).ready(function(){
                         title: msg,
                     });
                 }else{
-                    document.getElementById("close_modal").click();
                     setTimeout(function(){
                         $('.list_vm_client').DataTable().ajax.reload(null,false);
                         swal.close();
@@ -85,7 +87,7 @@ $(document).ready(function(){
 
     $('body .price').change(function(){
         var flavor
-        $('.flavor_select').find('label').children().each(function() {
+        $('.flavor_select input[name="image"]').each(function() {
             if ($(this).is(':checked')){
                 flavor = $(this).val();
             }
@@ -96,6 +98,10 @@ $(document).ready(function(){
         var count = $("body input[name=count]").val();
         var price_new = ((parseInt(ram)/1024) * 3 + parseInt(vcpus) * 2 + parseInt(disk) * 1) * parseInt(count);
         $("body input[name=price]").val(price_new);
+    });
+
+    $('#close_modal_sshkey').click(function(){
+        $("#id02").modal('show');
     });
 
 });

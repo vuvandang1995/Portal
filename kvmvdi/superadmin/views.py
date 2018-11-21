@@ -25,7 +25,7 @@ from .plugin.novaclient import nova
 from .plugin.keystoneclient import keystone
 from .plugin.neutronclient import neutron
 from .plugin.get_tokens import getToken
-from kvmvdi.settings import OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT
+from kvmvdi.settings import OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT, OPS_TOKEN_EXPIRED
 from django.utils import timezone
 
                 
@@ -46,8 +46,8 @@ class check_ping(threading.Thread):
         self.host = host
 
     def run(self):
-        # response = os.system("ping -n 1 " + self.host)
-        response = os.system("ping -c 1 " + self.host)
+        response = os.system("ping -n 1 " + self.host)
+        # response = os.system("ping -c 1 " + self.host)
         if response == 0:
             return True
         else:
@@ -251,7 +251,7 @@ def user_login(request):
                     elif user.is_active and user.is_adminkvm == False:
                         login(request, user)
                         if user.token_id is None or user.check_expired() == False:
-                            user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                            user.token_expired = timezone.datetime.now() + timezone.timedelta(second=OPS_TOKEN_EXPIRED)
                             user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
                                                      project_name=user.username, user_domain_id='default',
                                                      project_domain_id='default')

@@ -147,6 +147,7 @@ OPS_IP = '192.168.40.11'
 OPS_ADMIN = 'admin'
 OPS_PASSWORD = 'Welcome123'
 OPS_PROJECT = 'admin'
+OPS_TOKEN_EXPIRED = 3600
 
 RULE_USER = 'user'
 RULE_ADMIN = 'admin'

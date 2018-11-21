@@ -399,12 +399,15 @@
             for (i=1; i<message.length; i++){
                 var element = `<label>
                                     <input type="radio" name="image" value="`+message[i]+`">
-                                    <div class="all">
-                                    <img src="{% static 'images/portal/img/CentOS_logo.png' %}" alt="">
-                                    
-                                    <span class="create_checkbox_line2">
-                                        `+message[i]+`
-                                    </span>
+                                    <div class='all row'>
+                                        <div class='col-md-5'>
+                                            <img src="{% static 'images/portal/img/CentOS_logo.png' %}" alt="">
+                                        </div>
+                                        <di class='col-md-7 bootSource'>
+                                            <span>
+                                                `+message[i]+`
+                                            </span>
+                                        </div>
                                     </div>
                                 </label>`;
                 /*var element = '<option value="'+message[i]+'">'+message[i]+'</option>';*/
@@ -425,12 +428,15 @@
             for (i=1; i<sshkey.length; i++){
                 var element = `<label>
                                     <input type="radio" name="image" value="`+sshkey[i]+`">
-                                    <div class="all">
-                                    <img src="{% static 'images/portal/img/baseline-vpn_key-24px.png' %}" alt="">
-                                    
-                                    <span class="create_checkbox_line2">
-                                        `+sshkey[i]+`
-                                    </span>
+                                    <div class="all row">
+                                        <div class="col-md-5">
+                                            <img src="{% static 'images/portal/img/baseline-vpn_key-24px.png' %}" alt="">
+                                        </div>
+                                        <div class="col-md-7" style="margin-top:16px;">
+                                            <span class="create_checkbox_line2">
+                                                `+sshkey[i]+`
+                                            </span>
+                                        </div>
                                     </div>
                                 </label>`;
                 /*var element = '<option value="'+message[i]+'">'+message[i]+'</option>';*/
@@ -445,20 +451,24 @@
             for (i=0; i<network.length; i++){
                 var conten = 'Ram: '+network[i][0]+'Mb - VCPUs: '+network[i][1]+' - Disk: '+network[i][2]+'Gb';
                 var element = `<label>
-                                        <input type="radio" name="image" value="`+network[i]+`">
-                                        <div class="all flavor_">
-                                        <img src="{% static 'images/portal/img/CentOS_logo.png' %}" alt="">
-                                        <span class="create_checkbox_line2">
-                                            `+network[i][0]+` MB memory
-                                            <div class="deploylocationsoldoutmsg">
-                                                `+network[i][1]+` vitrual CPUs
-                                            </div>
-                                            <div class="deploylocationsoldoutmsg">
-                                                `+network[i][2]+` GB disk
-                                            </div>
-                                        </span>
+                                    <input type="radio" name="image" value="`+network[i]+`">
+                                    <div class="all flavor_ row">
+                                        <div class="col-md-5">
+                                            <img src="{% static 'images/portal/img/CentOS_logo.png' %}" alt="">
                                         </div>
-                                    </label>`
+                                        <div class="col-md-7" style="margin-top:5px;">
+                                            <span class="create_checkbox_line2">
+                                                `+network[i][0]+` MB memory
+                                                <div class="deploylocationsoldoutmsg">
+                                                    `+network[i][1]+` vitrual CPUs
+                                                </div>
+                                                <div class="deploylocationsoldoutmsg">
+                                                    `+network[i][2]+` GB disk
+                                                </div>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </label>`
                 /*var element = '<option value="'+network[i]+'">'+conten+'</option>';*/
                 $(".flavor_select").append(element);
             }

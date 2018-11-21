@@ -84,7 +84,7 @@ class MyUser(AbstractBaseUser):
 
     def check_expired(self):
         time = self.token_expired - timezone.datetime.now(timezone.utc)
-        return time > timezone.timedelta(seconds=10)
+        return time > timezone.timedelta(seconds=0)
 
 
 class Server(models.Model):

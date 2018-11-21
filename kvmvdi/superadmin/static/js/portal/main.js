@@ -25,3 +25,5 @@ $("#nac").click(function(){
     var pos = $('#nac1').outerWidth(true) + 'px';
     var elem = $("#animation").animate({left:pos},"slow");
 });
+
+
