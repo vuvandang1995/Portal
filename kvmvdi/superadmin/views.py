@@ -265,20 +265,21 @@ def user_login(request):
                 user_form = UserForm(request.POST)
                 if user_form.is_valid():
                     user = user_form.save()
-                    connect = keystone(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT,
-                                       user_domain_id='default', project_domain_id='default')
-                    connect.create_project(name=user.username, domain='default')
-                    check = False
-                    while check == False:
-                        if connect.find_project(user.username):
-                            connect.create_user(name=user.username, domain='default', project=user.username,
-                                                password=user.username, email=request.POST['email'])
-                            check = True
-                    check1 = False
-                    while check1 == False:
-                        if connect.find_user(user.username):
-                            check1 = True
-                    connect.add_user_to_project(user=user.username, project=user.username)
+                    if user.username != 'admin':
+                        connect = keystone(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT,
+                                        user_domain_id='default', project_domain_id='default')
+                        connect.create_project(name=user.username, domain='default')
+                        check = False
+                        while check == False:
+                            if connect.find_project(user.username):
+                                connect.create_user(name=user.username, domain='default', project=user.username,
+                                                    password=user.username, email=request.POST['email'])
+                                check = True
+                        check1 = False
+                        while check1 == False:
+                            if connect.find_user(user.username):
+                                check1 = True
+                        connect.add_user_to_project(user=user.username, project=user.username)
                     return redirect('/')
                 else:
                     error = ''
