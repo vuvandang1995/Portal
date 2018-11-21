@@ -24,6 +24,7 @@ cd Portal
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 sudo pip3 install -r requirements.txt
+python3 manage.py migrate
 ```
 
 ### Lưu ý:
