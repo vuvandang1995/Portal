@@ -101,7 +101,9 @@ $(document).ready(function(){
     });
 
     $('#close_modal_sshkey').click(function(){
-        $("#id02").modal('show');
+        setTimeout(function(){
+            $("#create_vm").click();
+        }, 1000);
     });
 
 });
