@@ -4,11 +4,11 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 from .models import Ops, MyUser
-from .views import check_ping
+from client.views import check_ping
 from superadmin.plugin.novaclient import nova
 from superadmin.plugin.get_tokens import getToken
 from django.utils import timezone
-from kvmvdi.settings import OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT
+from kvmvdi.settings import OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT, OPS_TOKEN_EXPIRED
 # from superadmin.plugin.neutronclient import neutron
 # from channels.layers import get_channel_layer
 # from channels.db import database_sync_to_async
@@ -46,7 +46,7 @@ class adminConsumer(AsyncWebsocketConsumer):
                 user = MyUser.objects.get(username=message.split('abcxyz')[1])
                 # user = MyUser.objects.get(username='admin')
                 if user.token_id is None or not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=OPS_ADMIN, password=OPS_PASSWORD,
                                              project_name=OPS_PROJECT, user_domain_id='default',
                                              project_domain_id='default')

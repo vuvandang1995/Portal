@@ -86,7 +86,7 @@ $(document).ready(function(){
 
 
     $('body .price').change(function(){
-        var flavor
+        var flavor;
         $('.flavor_select input[name="image"]').each(function() {
             if ($(this).is(':checked')){
                 flavor = $(this).val();

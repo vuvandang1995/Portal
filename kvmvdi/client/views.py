@@ -50,8 +50,8 @@ class check_ping(threading.Thread):
         self.host = host
 
     def run(self):
-        response = os.system("ping -n 1 " + self.host)
-        # response = os.system("ping -c 1 " + self.host)
+        # response = os.system("ping -n 1 " + self.host)
+        response = os.system("ping -c 1 " + self.host)
         if response == 0:
             return True
         else:
@@ -76,7 +76,7 @@ def show_instances(request, serverid):
             if thread.run():
                 ops = Ops.objects.get(ip=OPS_IP)
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -87,7 +87,7 @@ def show_instances(request, serverid):
             if 'snapshot' in request.POST:
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -100,7 +100,7 @@ def show_instances(request, serverid):
             elif 'resetpass' in request.POST:
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -115,7 +115,7 @@ def show_instances(request, serverid):
                 print(request.POST)
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -128,7 +128,7 @@ def show_instances(request, serverid):
                 # print(request.POST)
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -160,7 +160,7 @@ def instances(request):
                 if Ops.objects.get(ip=request.POST['ops']):
                     ops = Ops.objects.get(ip=request.POST['ops'])
                     if not user.check_expired():
-                        user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                        user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                         user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                                  project_name=user.username, user_domain_id='default',
                                                  project_domain_id='default')
@@ -242,7 +242,7 @@ def instances(request):
             elif 'delete' in request.POST:
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -257,7 +257,7 @@ def instances(request):
             elif 'start' in request.POST:
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -271,7 +271,7 @@ def instances(request):
             elif 'reboot' in request.POST:
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -285,7 +285,7 @@ def instances(request):
             elif 'stop' in request.POST:
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -299,7 +299,7 @@ def instances(request):
             elif 'snapshot' in request.POST:
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -315,7 +315,7 @@ def instances(request):
             elif 'backup' in request.POST:
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -333,7 +333,7 @@ def instances(request):
             elif 'sshkeyname' in request.POST:
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -387,7 +387,7 @@ def home_data(request, ops_ip):
                 ops = Ops.objects.get(ip=ops_ip)
                 print(user.check_expired())
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
