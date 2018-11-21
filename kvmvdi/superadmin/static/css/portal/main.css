@@ -323,3 +323,15 @@ body {
 #nac{
     cursor: pointer;
 }
+
+.all{
+    margin-right: 2px !important;
+    margin-left: 2px !important;
+    border: solid 1px #e6e9eb;
+    border-radius: 3px;
+}
+
+.bootSource{
+    margin-top:17px;
+}
+

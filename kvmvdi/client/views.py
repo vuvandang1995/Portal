@@ -50,8 +50,8 @@ class check_ping(threading.Thread):
         self.host = host
 
     def run(self):
-        # response = os.system("ping -n 1 " + self.host)
-        response = os.system("ping -c 1 " + self.host)
+        response = os.system("ping -n 1 " + self.host)
+        # response = os.system("ping -c 1 " + self.host)
         if response == 0:
             return True
         else:
@@ -385,7 +385,7 @@ def home_data(request, ops_ip):
             thread = check_ping(host=ops_ip)
             if thread.run():
                 ops = Ops.objects.get(ip=ops_ip)
-                # print(user.check_expired())
+                print(user.check_expired())
                 if not user.check_expired():
                     user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,

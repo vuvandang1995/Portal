@@ -140,7 +140,7 @@ input.create_checkbox + label {
 }
 .create_checkbox_line2 {
     display: block;
-    width: 160px;
+    width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 12px;
@@ -149,7 +149,6 @@ input.create_checkbox + label {
 .block1290 {
     max-width: 1290px;
     min-width: 360px;
-    margin: 0px auto 50px auto;
     padding: 0px 30px;
     overflow: auto;
 }
@@ -169,10 +168,9 @@ input.create_checkbox + label {
     justify-content: center;
     -webkit-align-items: flex-start;
     align-items: flex-start;
-    width: 270px;
-    height: 89px;
+    width: 200px;
+    height: 66px;
     padding: 0px 0px 0px 80px;
-    margin: 0px 18px 23px 0px;
     border: 1px dashed #e7e7e7;
     border-radius: 3px;
     cursor: pointer;

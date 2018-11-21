@@ -43,7 +43,10 @@ $(document).ready(function(){
             $("body").on('click', '#snapshot_submit', function(){
                 var snapshotname = $("input[name=snapshotname]").val();
                     swal({
-                            type: 'info',
+                            imageUrl: '/static/images/spinner-sample.gif',
+                            imageHeight: 120,
+                            imageAlt: 'wait',
+                            title: "Please wait...",
                             title: "Please wait...",
                             showConfirmButton: false
                         });
@@ -61,7 +64,10 @@ $(document).ready(function(){
             $("body").on('click', '#resetpass_submit', function(){
                 var pass = $("input[name=resetpass]").val();
                     swal({
-                            type: 'info',
+                            imageUrl: '/static/images/spinner-sample.gif',
+                            imageHeight: 120,
+                            imageAlt: 'wait',
+                            title: "Please wait...",
                             title: "Please wait...",
                             showConfirmButton: false
                         });
@@ -81,7 +87,10 @@ $(document).ready(function(){
                 var backup_type = document.getElementById("mySelect_backup_type").value;
                 var rotation = $("input[name=rotation]").val();
                     swal({
-                            type: 'info',
+                            imageUrl: '/static/images/spinner-sample.gif',
+                            imageHeight: 120,
+                            imageAlt: 'wait',
+                            title: "Please wait...",
                             title: "Please wait...",
                             showConfirmButton: false
                         });
@@ -103,10 +112,13 @@ $(document).ready(function(){
                 var image = document.getElementById("mySelect_image").value;
                 var disk_partition = document.getElementById("mySelect_type").value;
                 swal({
-                        type: 'info',
-                        title: "Please wait...",
-                        showConfirmButton: false
-                    });
+                            imageUrl: '/static/images/spinner-sample.gif',
+                            imageHeight: 120,
+                            imageAlt: 'wait',
+                            title: "Please wait...",
+                            title: "Please wait...",
+                            showConfirmButton: false
+                        });
                 $.ajax({
                     type:'POST',
                     url:location.href,
@@ -121,10 +133,13 @@ $(document).ready(function(){
             $("body").on('click', '#sshkey_submit', function(){
                 var sshkeyname = $("input[name=sshkeyname]").val();
                 swal({
-                        type: 'info',
-                        title: "Please wait...",
-                        showConfirmButton: false
-                    });
+                            imageUrl: '/static/images/spinner-sample.gif',
+                            imageHeight: 120,
+                            imageAlt: 'wait',
+                            title: "Please wait...",
+                            title: "Please wait...",
+                            showConfirmButton: false
+                        });
                 $.ajax({
                     type:'POST',
                     url:location.href,
@@ -147,7 +162,10 @@ $(document).ready(function(){
                 if(result.value){
                     if (action == 'del'){
                         swal({
-                            type: 'info',
+                            imageUrl: '/static/images/spinner-sample.gif',
+                            imageHeight: 120,
+                            imageAlt: 'wait',
+                            title: "Please wait...",
                             title: "Please wait...",
                             showConfirmButton: false
                         });
@@ -164,7 +182,10 @@ $(document).ready(function(){
                         });
                     }else if (action == 'start'){
                         swal({
-                            type: 'info',
+                            imageUrl: '/static/images/spinner-sample.gif',
+                            imageHeight: 120,
+                            imageAlt: 'wait',
+                            title: "Please wait...",
                             title: "Please wait...",
                             showConfirmButton: false
                         });
@@ -181,7 +202,10 @@ $(document).ready(function(){
                         });
                     }else if (action == 'reboot'){
                         swal({
-                            type: 'info',
+                            imageUrl: '/static/images/spinner-sample.gif',
+                            imageHeight: 120,
+                            imageAlt: 'wait',
+                            title: "Please wait...",
                             title: "Please wait...",
                             showConfirmButton: false
                         });
@@ -198,7 +222,10 @@ $(document).ready(function(){
                         });
                     }else if (action == 'hardreboot'){
                         swal({
-                            type: 'info',
+                            imageUrl: '/static/images/spinner-sample.gif',
+                            imageHeight: 120,
+                            imageAlt: 'wait',
+                            title: "Please wait...",
                             title: "Please wait...",
                             showConfirmButton: false
                         });
@@ -215,7 +242,10 @@ $(document).ready(function(){
                         });
                     }else if (action == 'stop'){
                         swal({
-                            type: 'info',
+                            imageUrl: '/static/images/spinner-sample.gif',
+                            imageHeight: 120,
+                            imageAlt: 'wait',
+                            title: "Please wait...",
                             title: "Please wait...",
                             showConfirmButton: false
                         });
