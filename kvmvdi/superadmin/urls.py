@@ -20,4 +20,9 @@ urlpatterns = [
     # url(r'update_status/$', views.update_status, name='update_status'),
     # url(r'edit_contact/([^@]+@[^@]+\.[^@]+)', views.edit_contact, name='edit_contact'),
     # url(r'add_contact/$', views.add_contact, name='add_contact'),
+    path('payment', views.payment, name='payment'),
+    path('payment_ipn', views.payment_ipn, name='payment_ipn'),
+    path('payment_return', views.payment_return, name='payment_return'),
+    path('query', views.query, name='query'),
+    path('refund', views.refund, name='refund'),
 ]

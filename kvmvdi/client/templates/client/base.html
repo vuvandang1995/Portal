@@ -3,7 +3,7 @@
     <head>
         {% load staticfiles %}
         <title>
-            Meditech
+            Intercom
         </title>
         <link rel="stylesheet" href="{% static 'css/portal/main.css' %}" rel="stylesheet" type="text/css">
 
@@ -32,9 +32,9 @@
                             <div class="col-md-2" >
                                 <i class="fa fa-bars" id="nac"></i>
                             </div>
-                            <div class="col-md-10">
+                            <div class="col-md-10" >
                                 <a href="{% url 'client:home' %}">
-                                    <img src="{% static 'images/portal/img/intercom.png' %}">
+                                    <img src="{% static 'images/portal/img/intercom.png' %}" style="width:90%;max-height:40px; margin-top: 8px;">
                                 </a>
                             </div>
                         </div>
@@ -62,8 +62,8 @@
                                 </div>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-right" style="float:right; width:100%;">
-                                <li><a href="{% url 'superadmin:profile' %}"><i class="ti-user"></i> Thông tin cá nhân</a></li>
-                                <li><a href="{% url 'superadmin:logout' %}"><i class="fa fa-power-off"></i> Đăng xuất</a></li>
+                                <li><a href="{% url 'superadmin:profile' %}"><i class="ti-user"></i> Profile</a></li>
+                                <li><a href="{% url 'superadmin:logout' %}"><i class="fa fa-power-off"></i> Logout</a></li>
                             </ul>
                         </div>
                     </div>
@@ -111,6 +111,12 @@
                                         <a href="#">
                                             <img alt="" src="{% static 'images/portal/img/Cart.png' %}"/>
                                             Cart
+                                        </a>
+                                    </li>
+                                    <li class="item-nav">
+                                        <a href="#">
+                                            <i class="fa fa-money fa-lg" aria-hidden="true" style="margin-left:-7px"></i>
+                                            Recharge
                                         </a>
                                     </li>
                                     <li class="item-nav">
