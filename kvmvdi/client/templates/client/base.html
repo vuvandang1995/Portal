@@ -432,6 +432,20 @@
                                         </div>
                                     </div>
                                 </label>`;
+                }else if (message[i].includes("in")){
+                    element = `<label>
+                                    <input type="radio" name="image" value="`+message[i]+`">
+                                    <div class='all row'>
+                                        <div class='col-md-5'>
+                                            <img src="{% static 'images/portal/img/windows.png' %}" alt="" height="62px" width="62px">
+                                        </div>
+                                        <di class='col-md-7 bootSource'>
+                                            <span>
+                                                `+message[i]+`
+                                            </span>
+                                        </div>
+                                    </div>
+                                </label>`;
                 }else {
                     element = `<label>
                                     <input type="radio" name="image" value="`+message[i]+`">
