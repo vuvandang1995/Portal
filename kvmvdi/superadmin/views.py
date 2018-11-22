@@ -63,7 +63,7 @@ def home(request):
                 if Ops.objects.get(ip=request.POST['ops']):
                     ops = Ops.objects.get(ip=request.POST['ops'])
                     if not user.check_expired():
-                        user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                        user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                         user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                                  project_name=user.username, user_domain_id='default',
                                                  project_domain_id='default')
@@ -96,7 +96,7 @@ def home(request):
             elif 'delete' in request.POST:
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -127,7 +127,7 @@ def home_data(request, ops_ip):
             if thread.run():
                 ops = Ops.objects.get(ip=request.POST['ops'])
                 if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(hours=1)
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
                                              project_name=user.username, user_domain_id='default',
                                              project_domain_id='default')
@@ -251,7 +251,7 @@ def user_login(request):
                     elif user.is_active and user.is_adminkvm == False:
                         login(request, user)
                         if user.token_id is None or user.check_expired() == False:
-                            user.token_expired = timezone.datetime.now() + timezone.timedelta(second=OPS_TOKEN_EXPIRED)
+                            user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                             user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
                                                      project_name=user.username, user_domain_id='default',
                                                      project_domain_id='default')

@@ -86,7 +86,7 @@ $(document).ready(function(){
 
 
     $('body .price').change(function(){
-        var flavor
+        var flavor;
         $('.flavor_select input[name="image"]').each(function() {
             if ($(this).is(':checked')){
                 flavor = $(this).val();
@@ -101,7 +101,9 @@ $(document).ready(function(){
     });
 
     $('#close_modal_sshkey').click(function(){
-        $("#id02").modal('show');
+        setTimeout(function(){
+            $("#create_vm").click();
+        }, 1000);
     });
 
 });
