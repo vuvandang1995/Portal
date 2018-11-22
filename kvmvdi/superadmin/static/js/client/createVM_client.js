@@ -96,7 +96,7 @@ $(document).ready(function(){
         var vcpus = flavor.split(',')[1];
         var disk = flavor.split(',')[2];
         var count = $("body input[name=count]").val();
-        var price_new = ((parseInt(ram)/1024) * 3 + parseInt(vcpus) * 2 + parseInt(disk) * 1) * parseInt(count);
+        var price_new = ((parseInt(ram)/1024) * 3 + parseInt(vcpus) * 2 + parseInt(disk) * 1) * parseInt(count) * 10000;
         $("body input[name=price]").val(price_new);
     });
 

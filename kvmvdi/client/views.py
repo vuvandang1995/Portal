@@ -44,8 +44,8 @@ class check_ping(threading.Thread):
         self.host = host
 
     def run(self):
-        response = os.system("ping -n 1 " + self.host)
-        # response = os.system("ping -c 1 " + self.host)
+        # response = os.system("ping -n 1 " + self.host)
+        response = os.system("ping -c 1 " + self.host)
         if response == 0:
             return True
         else:
@@ -192,7 +192,7 @@ def instances(request):
                     #             check = True
                     #     connect.createVM(svname=svname, flavor=connect.find_flavor(ram=ram, vcpus=vcpus, disk=disk), image=connect.find_image(image), network_id=connect.find_network(network), max_count=count)
 
-                    price = ((int(flavor.split(',')[0])/1024) * 3 + int(flavor.split(',')[1]) * 2 + int(flavor.split(',')[2])) * count
+                    price = ((int(flavor.split(',')[0])/1024) * 3 + int(flavor.split(',')[1]) * 2 + int(flavor.split(',')[2])) * count * 10000
                     if price <= float(user.money):
                         fl = connect.find_flavor(ram=int(flavor.split(',')[0]), vcpus=int(flavor.split(',')[1]), disk=int(flavor.split(',')[2]))
                         im = connect.find_image(image)
