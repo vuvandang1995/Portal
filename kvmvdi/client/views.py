@@ -1,31 +1,25 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.template import RequestContext
-from django.contrib.auth import login
+import urllib
+
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.contrib.auth import logout
-import uuid
-import random
 
 from django.utils.safestring import mark_safe
 import json
-from django.contrib.auth.models import User
 import threading
-from superadmin.forms import UserForm, authenticate, UserResetForm, get_user_email, ResetForm
-from django.contrib.sites.shortcuts import get_current_site
+
+
 from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_text
 from django.core.mail import EmailMessage
-from superadmin.models import MyUser, Ops, Server, Oders
+from superadmin.models import Ops, Server, Oders
 import os
 
 from superadmin.plugin.novaclient import nova
-from superadmin.plugin.neutronclient import neutron
-from superadmin.plugin.keystoneclient import keystone
 from superadmin.plugin.get_tokens import getToken
 
 from django.utils import timezone
-from kvmvdi.settings import OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT, NET_provider, NET_SELF, DISK_HDD, DISK_SSD, OPS_TOKEN_EXPIRED
+from kvmvdi.settings import OPS_IP, NET_provider, DISK_HDD, DISK_SSD, \
+    OPS_TOKEN_EXPIRED
 import time
 
                 
@@ -50,8 +44,8 @@ class check_ping(threading.Thread):
         self.host = host
 
     def run(self):
-        # response = os.system("ping -n 1 " + self.host)
-        response = os.system("ping -c 1 " + self.host)
+        response = os.system("ping -n 1 " + self.host)
+        # response = os.system("ping -c 1 " + self.host)
         if response == 0:
             return True
         else:
@@ -368,6 +362,7 @@ def instances(request):
     else:
         return HttpResponseRedirect('/')
 
+
 def home_data(request, ops_ip):
     user = request.user
 
@@ -503,9 +498,11 @@ def home_data(request, ops_ip):
                 json_data = json.loads(json.dumps(big_data))
                 return JsonResponse(json_data)
 
+
 def user_logout(request):
     logout(request)
     return HttpResponseRedirect('/')
+
 
 def user_profile(request):
     user = request.user
@@ -513,6 +510,7 @@ def user_profile(request):
         return render(request, 'client/profile.html', {'username': mark_safe(json.dumps(user.username))})
     else:
         return HttpResponseRedirect('/')
+
 
 def user_oders(request):
     user = request.user
@@ -522,3 +520,4 @@ def user_oders(request):
     else:
         return HttpResponseRedirect('/')
     
+
