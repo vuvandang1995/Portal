@@ -287,11 +287,11 @@ def user_login(request):
                 if user:
                     if user.is_active and user.is_adminkvm:
                         login(request, user)
-                        # if user.token_id is None or user.check_expired() == False:
-                        user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
-                        user.token_id = getToken(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT,
-                                    user_domain_id='default', project_domain_id='default')
-                        user.save()
+                        if user.token_id is None or user.check_expired() == False:
+                            user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                            user.token_id = getToken(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT,
+                                        user_domain_id='default', project_domain_id='default')
+                            user.save()
                         return HttpResponseRedirect('/home')
                     elif user.is_active and user.is_adminkvm == False:
                         login(request, user)

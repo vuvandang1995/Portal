@@ -20,7 +20,8 @@ $(document).ready(function(){
         // var flavor = document.getElementById("mySelect").value;
         $('.flavor_select').find('label').children().each(function() {
             if ($(this).is(':checked')){
-                flavor = $(this).val();
+                flavor = $(this).val().replace("[", "");
+                flavor = flavor.replace("]", "");
             }
         });
 
@@ -89,9 +90,22 @@ $(document).ready(function(){
         var flavor;
         $('.flavor_select input[name="image"]').each(function() {
             if ($(this).is(':checked')){
-                flavor = $(this).val();
+                flavor = $(this).val().replace("[", "");
+                flavor = flavor.replace("]", "");
             }
         });
+        var ram = flavor.split(',')[0];
+        var vcpus = flavor.split(',')[1];
+        var disk = flavor.split(',')[2];
+        var count = $("body input[name=count]").val();
+        var price_new = ((parseInt(ram)/1024) * 3 + parseInt(vcpus) * 2 + parseInt(disk) * 1) * parseInt(count) * 10000;
+        $("body input[name=price]").val(price_new);
+    });
+    
+
+    $('body .flavor_').click(function(){
+        var flavor = $(this).prev().val().replace("[", "");
+        flavor = flavor.replace("]", "");
         var ram = flavor.split(',')[0];
         var vcpus = flavor.split(',')[1];
         var disk = flavor.split(',')[2];
