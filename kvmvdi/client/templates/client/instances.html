@@ -156,7 +156,65 @@
                             Select boot Source
                         </h3>
                         <form class="image_select">
-                            
+                            {% for im in images%}
+                                {% if "win" in im %}
+                                    <label>
+                                        <input type="radio" name="image" value="{{im}}">
+                                        <div class='all row'>
+                                            <div class='col-md-5'>
+                                                <img src="{% static 'images/portal/img/windows.png' %}" alt="" height="62px" width="62px">
+                                            </div>
+                                            <div class='col-md-7 bootSource'>
+                                                <span>
+                                                    {{im}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                {% elif "cen" in im%}
+                                    <label>
+                                        <input type="radio" name="image" value="{{im}}">
+                                        <div class='all row'>
+                                            <div class='col-md-5'>
+                                                <img src="{% static 'images/portal/img/CentOS_logo.gif' %}" alt="" height="62px" width="62px">
+                                            </div>
+                                            <div class='col-md-7 bootSource'>
+                                                <span>
+                                                    {{im}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                {% elif "u" in im%}
+                                    <label>
+                                        <input type="radio" name="image" value="{{im}}">
+                                        <div class='all row'>
+                                            <div class='col-md-5'>
+                                                <img src="{% static 'images/portal/img/ubuntu_logo.gif' %}" alt="" height="62px" width="62px">
+                                            </div>
+                                            <div class='col-md-7 bootSource'>
+                                                <span>
+                                                    {{im}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                {% else%}
+                                    <label>
+                                        <input type="radio" name="image" value="{{im}}">
+                                        <div class='all row'>
+                                            <div class='col-md-5'>
+                                                <img src="{% static 'images/portal/img/CentOS_logo.png' %}" alt="" height="62px" width="62px">
+                                            </div>
+                                            <div class='col-md-7 bootSource'>
+                                                <span>
+                                                    {{im}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                {% endif%}
+                            {% endfor%}
                         </form>
 
                         
@@ -169,7 +227,27 @@
                             Select a configuration
                         </h3>
                         <form class="flavor_select">
-                            
+                            {% for fl in flavors%}
+                                <label>
+                                    <input type="radio" name="image" value="{{fl}}">
+                                    <div class="all flavor_ row">
+                                        <div class="col-md-5">
+                                            <img src="{% static 'images/portal/img/server.png' %}" alt="" height="62px" width="62px">
+                                        </div>
+                                        <div class="col-md-7" style="margin-top:5px;">
+                                            <span class="create_checkbox_line2">
+                                                {{fl.0}} MB memory
+                                                <div class="deploylocationsoldoutmsg">
+                                                    {{fl.1}} vitrual CPUs
+                                                </div>
+                                                <div class="deploylocationsoldoutmsg">
+                                                    {{fl.2}} GB disk
+                                                </div>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </label>
+                            {% endfor%}
                         </form>
                         
                         
@@ -207,7 +285,21 @@
                         </h3>
 
                         <form class="sshkey_select">
-                            
+                            {% for sshkey in sshkeys %}
+                                <label>
+                                    <input type="radio" name="image" value="{{sshkey}}">
+                                    <div class="all row">
+                                        <div class="col-md-5">
+                                            <img src="{% static 'images/portal/img/baseline-vpn_key-24px.png' %}" alt="">
+                                        </div>
+                                        <div class="col-md-7" style="margin-top:16px;">
+                                            <span class="create_checkbox_line2">
+                                                {{sshkey}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </label>
+                            {% endfor%}
                         </form>
 
                         <span class="create_linkbox control" data-toggle="modal" data-target="#sshkey" name="{{OPS_IP}}_servername" id="sshkey_serverid" type="submit">
@@ -257,7 +349,7 @@
                                     <input type="text" name="price" class="price rootpass form-control" disabled required value="1" >
                                 </div>
                                 <div class="col-md-2" >
-                                     <font size="4">VNU/MONTH</font>
+                                     <font size="4">VND/MONTH</font>
                                 </div>
                             </div>
                         </span>

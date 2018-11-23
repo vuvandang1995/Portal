@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
@@ -103,6 +104,30 @@ class Server(models.Model):
     class Meta:
         managed = True
         db_table = 'serverVM'
+
+class Flavors(models.Model):
+    ops = models.ForeignKey('Ops', models.CASCADE, db_column='ops')
+    thong_so = models.CharField(max_length=255)
+
+    class Meta:
+        managed = True
+        db_table = 'flavors'
+
+class Sshkeys(models.Model):
+    ops = models.ForeignKey('Ops', models.CASCADE, db_column='ops')
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        managed = True
+        db_table = 'sshkeys'
+
+class Images(models.Model):
+    ops = models.ForeignKey('Ops', models.CASCADE, db_column='ops')
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        managed = True
+        db_table = 'images'
 
 
 class Oders(models.Model):

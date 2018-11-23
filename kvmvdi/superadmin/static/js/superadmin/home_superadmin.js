@@ -40,5 +40,35 @@ $(document).ready(function(){
         window.open(url);
     });
 
+    $("body").on('click', '.update_flavor', function(){
+        var token = $("input[name=csrfmiddlewaretoken]").val();
+        var ops = $(this).data('ops');
+        if (confirm('Are you sure?')){
+            $.ajax({
+                type:'POST',
+                url:location.href,
+                data: {'csrfmiddlewaretoken':token, 'reload_flavor':ops},
+                success: function(){
+                    
+                }
+           });
+        }
+    });
+
+    $("body").on('click', '.update_image', function(){
+        var token = $("input[name=csrfmiddlewaretoken]").val();
+        var ops = $(this).data('ops');
+        if (confirm('Are you sure?')){
+            $.ajax({
+                type:'POST',
+                url:location.href,
+                data: {'csrfmiddlewaretoken':token, 'reload_image':ops},
+                success: function(){
+                    
+                }
+           });
+        }
+    });
+
 
 });

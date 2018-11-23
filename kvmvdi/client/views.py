@@ -11,7 +11,7 @@ import threading
 
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from superadmin.models import Ops, Server, Oders
+from superadmin.models import *
 import os
 
 from superadmin.plugin.novaclient import nova
@@ -351,13 +351,26 @@ def instances(request):
                 )
                 thread = EmailThread(email)
                 thread.start()
+                Sshkeys.objects.create(ops=ops, name=sshkeyname)
                 # server = Server.objects.get(name=request.POST['svname'])
                 # server.delete()
+        flavors = []
+        images = []
+        sshkeys = []
+        for fl in Flavors.objects.filter(ops=Ops.objects.get(ip=OPS_IP)).values('thong_so'):
+            flavors.append(json.loads(fl['thong_so']))
+        for im in Images.objects.filter(ops=Ops.objects.get(ip=OPS_IP)).values('name'):
+            images.append((im['name']))
+        for sshkey in Sshkeys.objects.filter(ops=Ops.objects.get(ip=OPS_IP)).values('name'):
+            sshkeys.append((sshkey['name']))
         return render(request, 'client/instances.html',{'username': mark_safe(json.dumps(user.username)),
                                 'OPS_IP': OPS_IP,
                                 'DISK_SSD': DISK_SSD,
                                 'DISK_HDD': DISK_HDD,
-                                'ip_ops': mark_safe(json.dumps(OPS_IP))
+                                'ip_ops': mark_safe(json.dumps(OPS_IP)),
+                                'flavors': flavors,
+                                'images': images,
+                                'sshkeys': sshkeys
                                 })
     else:
         return HttpResponseRedirect('/')

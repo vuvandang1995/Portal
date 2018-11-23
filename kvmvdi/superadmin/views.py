@@ -21,7 +21,7 @@ from django.utils.encoding import force_bytes, force_text
 
 from .tokens import account_activation_token
 from django.core.mail import EmailMessage
-from superadmin.models import MyUser, Ops
+from superadmin.models import *
 import os
 from superadmin.vnpay import vnpay
 
@@ -50,8 +50,8 @@ class check_ping(threading.Thread):
         self.host = host
 
     def run(self):
-        response = os.system("ping -n 1 " + self.host)
-        # response = os.system("ping -c 1 " + self.host)
+        # response = os.system("ping -n 1 " + self.host)
+        response = os.system("ping -c 1 " + self.host)
         if response == 0:
             return True
         else:
@@ -117,8 +117,43 @@ def home(request):
                                     project=request.POST['project'],
                                     userdomain=request.POST['userid'],
                                     projectdomain=request.POST['projectid'])
+            elif 'reload_flavor' in request.POST:
+                ops_ip = request.POST['reload_flavor']
+                if Ops.objects.get(ip=ops_ip):
+                    thread = check_ping(host=ops_ip)
+                    if thread.run():
+                        ops = Ops.objects.get(ip=ops_ip)
+                        print(user.check_expired())
+                        if not user.check_expired():
+                            user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                            user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
+                                                    project_name=user.username, user_domain_id='default',
+                                                    project_domain_id='default')
+                            user.save()
+                        connect = nova(ip=ops.ip, token_id=user.token_id, project_name=user.username,
+                                    project_domain_id=ops.projectdomain)
+                        for fl in connect.list_flavor():
+                            Flavors.objects.create(ops=ops, thong_so=json.dumps(fl))
+            elif 'reload_image' in request.POST:
+                ops_ip = request.POST['reload_image']
+                if Ops.objects.get(ip=ops_ip):
+                    thread = check_ping(host=ops_ip)
+                    if thread.run():
+                        ops = Ops.objects.get(ip=ops_ip)
+                        if not user.check_expired():
+                            user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                            user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
+                                                    project_name=user.username, user_domain_id='default',
+                                                    project_domain_id='default')
+                            user.save()
+                        connect = nova(ip=ops.ip, token_id=user.token_id, project_name=user.username,
+                                    project_domain_id=ops.projectdomain)
+                        for im in connect.list_images():
+                            Images.objects.create(ops=ops, name=im)
         return render(request, 'kvmvdi/index.html',{'username': mark_safe(json.dumps(user.username)),
-                                                        'ops': list_ops})
+                                                        'ops': list_ops,
+                                                        'OPS_IP': OPS_IP
+                                                        })
     else:
         return HttpResponseRedirect('/')
 
@@ -129,7 +164,7 @@ def home_data(request, ops_ip):
         if Ops.objects.get(ip=ops_ip):
             thread = check_ping(host=ops_ip)
             if thread.run():
-                ops = Ops.objects.get(ip=request.POST['ops'])
+                ops = Ops.objects.get(ip=ops_ip)
                 if not user.check_expired():
                     user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=ops.ip, username=user.username, password=user.username,
@@ -248,9 +283,16 @@ def user_login(request):
                 username = request.POST['agentname']
                 password = request.POST['agentpass']
                 user = authenticate(username=username, password=password)
+                print(username)
                 if user:
                     if user.is_active and user.is_adminkvm:
                         login(request, user)
+                        if user.token_id is None or user.check_expired() == False:
+                            user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                            user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
+                                                     project_name=user.username, user_domain_id='default',
+                                                     project_domain_id='default')
+                            user.save()
                         return HttpResponseRedirect('/home')
                     elif user.is_active and user.is_adminkvm == False:
                         login(request, user)

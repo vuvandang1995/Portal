@@ -114,7 +114,7 @@
                                         </a>
                                     </li>
                                     <li class="item-nav">
-                                        <a href="#">
+                                        <a href="{% url 'superadmin:payment'%}">
                                             <i class="fa fa-money fa-lg" aria-hidden="true" style="margin-left:-7px"></i>
                                             Recharge
                                         </a>
@@ -399,7 +399,7 @@
         var message = data['message'];
         var network = data['network'];
         var sshkey = data['sshkey'];
-        if (message[0] == 'image_list'){
+        /*if (message[0] == 'image_list'){
             $('.image_select').find('label').remove();
             var i;
             for (i=1; i<message.length; i++){
@@ -411,7 +411,7 @@
                                         <div class='col-md-5'>
                                             <img src="{% static 'images/portal/img/CentOS_logo.gif' %}" alt="" height="62px" width="62px">
                                         </div>
-                                        <di class='col-md-7 bootSource'>
+                                        <div class='col-md-7 bootSource'>
                                             <span>
                                                 `+message[i]+`
                                             </span>
@@ -462,7 +462,6 @@
                                 </label>`;
                 }
                 
-                /*var element = '<option value="'+message[i]+'">'+message[i]+'</option>';*/
                 $(".image_select").append(element);
             }
 
@@ -472,9 +471,9 @@
                 var element = '<option value="'+message[i]+'">'+message[i]+'</option>';
                 $("#mySelect_image_rebuild").append(element);
             }
-        }
+        }*/
 
-        if (sshkey){
+        /*if (sshkey){
             $('.sshkey_select').find('label').remove();
             var i;
             for (i=1; i<sshkey.length; i++){
@@ -491,13 +490,12 @@
                                         </div>
                                     </div>
                                 </label>`;
-                /*var element = '<option value="'+message[i]+'">'+message[i]+'</option>';*/
                 $(".sshkey_select").append(element);
             }
-        }
+        }*/
         
         
-        if (network){
+        /*if (network){
             $('.flavor_select').find('label').remove();
             var i;
             for (i=0; i<network.length; i++){
@@ -521,17 +519,10 @@
                                         </div>
                                     </div>
                                 </label>`
-                /*var element = '<option value="'+network[i]+'">'+conten+'</option>';*/
                 $(".flavor_select").append(element);
             }
-            /*var flavor = document.getElementById("mySelect").value;
-            var ram = flavor.split(',')[0];
-            var vcpus = flavor.split(',')[1];
-            var disk = flavor.split(',')[2];
-            var count = $("body input[name=count]").val();
-            var price_new = ((parseInt(ram)/1024) * 3 + parseInt(vcpus) * 2 + parseInt(disk) * 1) * parseInt(count);*/
             $("body input[name=price]").val(0);
-        }
+        }*/
 
 
         $('body .flavor_').click(function(){

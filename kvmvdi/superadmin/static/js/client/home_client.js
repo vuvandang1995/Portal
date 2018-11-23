@@ -147,6 +147,7 @@ $(document).ready(function(){
                     success: function(){
                         document.getElementById("close_modal_sshkey").click();
                         swal.close();
+                        $("body .sshkey_select").load(location.href + " .sshkey_select");
                     }
                 });
             });

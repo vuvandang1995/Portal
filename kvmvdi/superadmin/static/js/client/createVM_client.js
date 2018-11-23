@@ -79,9 +79,9 @@ $(document).ready(function(){
         $("input[name=vcpus]").val("1");
         $("input[name=disk]").val("20");
         $("input[name=count]").val("1");
-        opsSocket.send(JSON.stringify({
-            'message' : ip+'abcxyz'+userName,
-        }));
+        // opsSocket.send(JSON.stringify({
+        //     'message' : ip+'abcxyz'+userName,
+        // }));
     });
 
 

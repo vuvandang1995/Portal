@@ -12,10 +12,7 @@ class nova():
         self.nova = client.Client(2, session=self.sess)
         self.cinder = client_cinder.Client(3, session=self.sess)
         self.neutron = client_neutron.Client(session=self.sess)
-        self.network = self.neutron.list_networks()["networks"]
-        self.servers = self.nova.servers.list()
-        self.flavors = self.nova.flavors.list()
-        self.images = self.nova.glance.list()
+        # self.keystone = client_keystone.Client(session=self.sess)
         try:
             self.services = self.nova.services.list()
             self.hypervisors = self.nova.hypervisors.list()
@@ -23,7 +20,7 @@ class nova():
             pass
     
     def list_server(self):
-        return self.servers
+        return self.nova.servers.list()
 
     def get_server(self, serverid):
         return self.nova.servers.get(serverid)
@@ -36,13 +33,12 @@ class nova():
 
     def list_images(self):
         image_list = []
-        for image in self.images:
+        for image in self.nova.glance.list():
             image_list.append(image.name)
-        image_list.insert(0, "image_list")
         return image_list
 
     def list_flavor(self):
-        fl = self.flavors
+        fl = self.nova.flavors.list()
         flavor_list = []
         for flavor in fl:
             combo = []
@@ -113,7 +109,7 @@ class nova():
 
     def list_networks(self):
         network_list = []
-        for item in self.network:
+        for item in self.neutron.list_networks()["networks"]:
             network_keys = {'name'}
             for key, value in item.items():
                 if key in network_keys:
@@ -125,5 +121,4 @@ class nova():
         sshkey_list = []
         for item in self.nova.keypairs.list():
             sshkey_list.append(item.name)
-        sshkey_list.insert(0, "sshkey_list")
         return sshkey_list
