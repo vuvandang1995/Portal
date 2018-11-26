@@ -132,6 +132,10 @@ def home(request):
                             user.save()
                         connect = nova(ip=ops.ip, token_id=user.token_id, project_name=user.username,
                                     project_domain_id=ops.projectdomain)
+                        try:
+                            Flavors.objects.all().delete()
+                        except:
+                            pass
                         for fl in connect.list_flavor():
                             Flavors.objects.create(ops=ops, thong_so=json.dumps(fl))
             elif 'reload_image' in request.POST:
@@ -148,6 +152,10 @@ def home(request):
                             user.save()
                         connect = nova(ip=ops.ip, token_id=user.token_id, project_name=user.username,
                                     project_domain_id=ops.projectdomain)
+                        try:
+                            Images.objects.all().delete()
+                        except:
+                            pass
                         for im in connect.list_images():
                             Images.objects.create(ops=ops, name=im)
         return render(request, 'kvmvdi/index.html',{'username': mark_safe(json.dumps(user.username)),
