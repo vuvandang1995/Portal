@@ -38,7 +38,7 @@
     <div class="add">
         <img src="{% static 'images/portal/img/arrow.png' %}" alt="">
     </div>
-    <div class="add" data-toggle="modal" data-target="#id02" data-placement="left" title="Create Instances!" data-title="" data-project="{{user.username}}" data-backdrop="false" id="create_vm">
+    <div class="add" data-toggle="modal" data-target="#id02" data-placement="left" title="Create Instances!" data-title="{{OPS_IP}}" data-project="{{user.username}}" data-backdrop="false" id="create_vm">
         <i class="fa fa-plus"></i>
     </div>
 </div>
@@ -302,7 +302,7 @@
                             {% endfor%}
                         </form>
 
-                        <span class="create_linkbox control" data-toggle="modal" data-target="#sshkey" name="_servername" id="sshkey_serverid" type="submit">
+                        <span class="create_linkbox control" data-toggle="modal" data-target="#sshkey" name="{{OPS_IP}}_servername" id="sshkey_serverid" type="submit">
                             <span class="create_checkbox_icon fonticon_add"> <img src="{% static 'images/portal/img/baseline-add_circle_outline-24px.png' %}" alt="">
                             </span>
                             <span class="create_linkbox_line1">
@@ -311,22 +311,22 @@
                         </span>
                     </div>
 
-                    <div class="create_block" style="margin-top:10px;">
-                        <div class="create_block_step">
-                            6
-                        </div>
-                        <h3 style="font-size:19px;">
-                            Root Password   
-                        </h3>
-                        <span>
-                            <input type="password" name="rootpass" style="width: 90%;height: 40px;" class="rootpass">
-                            <img src="{% static 'images/portal/img/Path69.png' %}" alt="" class="seepass">
-                        </span>
-                    </div>
+                    <!--<div class="create_block" style="margin-top:10px;">-->
+                        <!--<div class="create_block_step">-->
+                            <!--7  -->
+                        <!--</div>-->
+                        <!--<h3 style="font-size:19px;">-->
+                            <!--Root Password   -->
+                        <!--</h3>-->
+                        <!--<span>-->
+                            <!--<input type="password" name="rootpass" style="width: 90%;height: 40px;" class="rootpass">-->
+                            <!--<img src="{% static 'images/portal/img/Path69.png' %}" alt="" class="seepass">-->
+                        <!--</span>-->
+                    <!--</div>-->
 
                     <div class="create_block" style="margin-top:10px;">
                         <div class="create_block_step">
-                            7
+                            6
                         </div>
                         <h3 style="font-size:19px;">
                             Instance Count:
@@ -338,7 +338,7 @@
 
                     <div class="create_block" style="margin-top:10px;">
                         <div class="create_block_step">
-                            8
+                            7
                         </div>
                         <h3 style="font-size:19px;">
                             Price:
@@ -368,6 +368,9 @@
 {% endif %}
 {% endblock content %}
 {% block js %}
+<script>
+    var ops_ip = {{ip_ops}};
+</script>
 <script src="{% static 'js/base-js/datatables.min.js' %}"></script>
 <script src="{% static 'js/portal/createinstance.js' %}"></script>
 <script src="{% static 'js/client/home_client.js' %}"></script>

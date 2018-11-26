@@ -15,7 +15,7 @@ $(document).ready(function(){
             }
         });
         
-        var ops = $("input[name=svip]").val();
+        
         var project = $("input[name=project]").val();
         // var flavor = document.getElementById("mySelect").value;
         $('.flavor_select').find('label').children().each(function() {
@@ -37,32 +37,39 @@ $(document).ready(function(){
         // var disk = $("input[name=disk]").val();
         var count = $("input[name=count]").val();
         var price = $("input[name=price]").val();
-        swal({
-            imageUrl: '/static/images/spinner-sample.gif',
-            imageHeight: 120,
-            imageAlt: 'wait',
-            title: "Please wait...",
-            showConfirmButton: false
-        });
-        document.getElementById("close_modal").click();
-        $.ajax({
-            type:'POST',
-            url:location.href,
-            data: {'svname': svname, 'type_disk': type_disk, 'rootpass': rootpass, 'sshkey': sshkey, 'price': price,'ops': ops, 'description': description, 'csrfmiddlewaretoken':token, 'image': image, 'flavor': flavor, 'count': count, 'project': project},
-            success: function(msg){
-                if ((msg == "Vui long nap them tien vao tai khoan!") || (msg == "No IP availability!") || (msg == "Xay ra loi khi tao volume!")){
-                    swal({
-                        type: 'warning',
-                        title: msg,
-                    });
-                }else{
-                    setTimeout(function(){
-                        $('.list_vm_client').DataTable().ajax.reload(null,false);
-                        swal.close();
-                    }, 0);
-                }
-             },
-        });
+        if ((svname == '') || (type_disk == '') || (price == '') || (image == '') || (flavor == '') || (count == '') || (rootpass == '')){
+            swal({
+                type: 'warning',
+                title: "Vui lòng điền đầy đủ thông tin",
+            });
+        }else{
+            swal({
+                imageUrl: '/static/images/spinner-sample.gif',
+                imageHeight: 120,
+                imageAlt: 'wait',
+                title: "Please wait...",
+                showConfirmButton: false
+            });
+            document.getElementById("close_modal").click();
+            $.ajax({
+                type:'POST',
+                url:location.href,
+                data: {'svname': svname, 'type_disk': type_disk, 'rootpass': rootpass, 'sshkey': sshkey, 'price': price, 'description': description, 'csrfmiddlewaretoken':token, 'image': image, 'flavor': flavor, 'count': count, 'project': project},
+                success: function(msg){
+                    if ((msg == "Vui long nap them tien vao tai khoan!") || (msg == "No IP availability!") || (msg == "Xay ra loi khi tao volume!")  || (msg == "Xay ra loi khi tao Server!") || (msg == "Xay ra loi khi check flavor!") || (msg == "Xay ra loi khi check image!") || (msg == "Xay ra loi khi check network!") || (msg == "Tên server bị trùng!")){
+                        swal({
+                            type: 'warning',
+                            title: msg,
+                        });
+                    }else{
+                        setTimeout(function(){
+                            $('.list_vm_client').DataTable().ajax.reload(null,false);
+                            swal.close();
+                        }, 0);
+                    }
+                 },
+            });
+        }
 
     });
 
@@ -70,9 +77,7 @@ $(document).ready(function(){
 
     $("#id02").on('show.bs.modal', function(event){
         var button = $(event.relatedTarget);
-        var ip = button.data('title');
         var project = button.data('project');
-        $("input[name=svip]").val(ip);
         $("input[name=project]").val(project);
         $("input[name=svname]").val("");
         $("input[name=description]").val("");

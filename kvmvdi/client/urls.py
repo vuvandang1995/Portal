@@ -10,6 +10,6 @@ urlpatterns = [
     path('/profile', views.user_profile, name='profile'),
     path('/oders', views.user_oders, name='oders'),
     path('/logout', views.user_logout, name='logout'),
-    path('/home_data_<str:ops_ip>/', views.home_data, name='home_data'),
+    path('/home_data_', views.home_data, name='home_data'),
 
 ]

@@ -130,10 +130,9 @@ class Images(models.Model):
         managed = True
         db_table = 'images'
 
-
 class Oders(models.Model):
     service = models.CharField(max_length=255)
-    server = models.ForeignKey('Server', models.CASCADE, db_column='server')
+    server = models.CharField(max_length=255)
     ip = models.CharField(max_length=255,null=True)
     price = models.CharField(max_length=255)
     status = models.IntegerField(default=1)
@@ -143,8 +142,6 @@ class Oders(models.Model):
     class Meta:
         managed = True
         db_table = 'oders'
-
-
 
 class Ops(models.Model):
     name = models.CharField(max_length=255)

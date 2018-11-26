@@ -3,7 +3,7 @@ $(document).ready(function(){
         $(this).DataTable({
             "ajax": {
                 "type": "GET",
-                "url": "/client/home_data_"+ops_ip,
+                "url": "/client/home_data_",
                 "contentType": "application/json; charset=utf-8",
                 "data": function(result){
                     return JSON.stringify(result);
@@ -36,8 +36,7 @@ $(document).ready(function(){
     $("body").on('click', '.control', function(){
         var id = $(this).attr('id').split('_')[1];
         var action = $(this).attr('id').split('_')[0];
-        var ops = $(this).attr('name').split('_')[0];
-        var svname = $(this).attr('name').split('_')[1];
+        var svname = $(this).attr('name');
         var token = $("input[name=csrfmiddlewaretoken]").val();
         if (action == 'snapshot'){
             $("body").on('click', '#snapshot_submit', function(){
@@ -53,10 +52,17 @@ $(document).ready(function(){
                 $.ajax({
                     type:'POST',
                     url:location.href,
-                    data: {'snapshot':id, 'csrfmiddlewaretoken':token, 'ops':ops, 'svname': svname, 'snapshotname': snapshotname},
-                    success: function(){
-                        document.getElementById("close_modal_snapshot").click();
-                        swal.close();
+                    data: {'snapshot':id, 'csrfmiddlewaretoken':token, 'svname': svname, 'snapshotname': snapshotname},
+                    success: function(msg){
+                        if (msg == 'Đã có lỗi xảy ra!'){
+                            swal({
+                                type: 'error',
+                                title: msg,
+                            });
+                        }else{
+                            document.getElementById("close_modal_snapshot").click();
+                            swal.close();
+                        }
                     }
                 });
             });
@@ -74,10 +80,17 @@ $(document).ready(function(){
                 $.ajax({
                     type:'POST',
                     url:location.href,
-                    data: {'resetpass':id, 'csrfmiddlewaretoken':token, 'pass': pass, 'ops': ops},
-                    success: function(){
-                        document.getElementById("close_modal_resetpass").click();
-                        swal.close();
+                    data: {'resetpass':id, 'csrfmiddlewaretoken':token, 'pass': pass},
+                    success: function(msg){
+                        if (msg == 'Đã có lỗi xảy ra!'){
+                            swal({
+                                type: 'error',
+                                title: msg,
+                            });
+                        }else{
+                            document.getElementById("close_modal_resetpass").click();
+                            swal.close();
+                        }
                     }
                 });
             });
@@ -97,16 +110,23 @@ $(document).ready(function(){
                 $.ajax({
                     type:'POST',
                     url:location.href,
-                    data: {'backup':id, 'csrfmiddlewaretoken':token, 'ops':ops, 'svname': svname, 'backupname': backupname, 'backup_type': backup_type, 'rotation': rotation},
-                    success: function(){
-                        document.getElementById("close_modal_backup").click();
-                        swal.close();
+                    data: {'backup':id, 'csrfmiddlewaretoken':token, 'svname': svname, 'backupname': backupname, 'backup_type': backup_type, 'rotation': rotation},
+                    success: function(msg){
+                        if (msg == 'Đã có lỗi xảy ra!'){
+                            swal({
+                                type: 'error',
+                                title: msg,
+                            });
+                        }else{
+                            document.getElementById("close_modal_backup").click();
+                            swal.close();
+                        }
                     }
                 });
             });
         }else if (action == 'rebuild'){
-            opsSocket.send(JSON.stringify({
-                'message' : ops,
+            Socket.send(JSON.stringify({
+                'message' : '10.10.10.99',
             }));
             $("body").on('click', '#rebuild_submit', function(){
                 var image = document.getElementById("mySelect_image").value;
@@ -122,10 +142,17 @@ $(document).ready(function(){
                 $.ajax({
                     type:'POST',
                     url:location.href,
-                    data: {'rebuild':id, 'csrfmiddlewaretoken':token, 'ops':ops, 'image': image, 'disk_partition': disk_partition},
-                    success: function(){
-                        document.getElementById("close_modal_rebuild").click();
-                        swal.close();
+                    data: {'rebuild':id, 'csrfmiddlewaretoken':token, 'image': image, 'disk_partition': disk_partition},
+                    success: function(msg){
+                        if (msg == 'Đã có lỗi xảy ra!'){
+                            swal({
+                                type: 'error',
+                                title: msg,
+                            });
+                        }else{
+                            document.getElementById("close_modal_rebuild").click();
+                            swal.close();
+                        }
                     }
                 });
             });
@@ -143,11 +170,18 @@ $(document).ready(function(){
                 $.ajax({
                     type:'POST',
                     url:location.href,
-                    data: {'sshkeyname':sshkeyname, 'csrfmiddlewaretoken':token, 'ops': ops},
-                    success: function(){
-                        document.getElementById("close_modal_sshkey").click();
-                        swal.close();
-                        $("body .sshkey_select").load(location.href + " .sshkey_select");
+                    data: {'sshkeyname':sshkeyname, 'csrfmiddlewaretoken':token},
+                    success: function(msg){
+                        if (msg == 'Đã có lỗi xảy ra!'){
+                            swal({
+                                type: 'error',
+                                title: msg,
+                            });
+                        }else{
+                            document.getElementById("close_modal_sshkey").click();
+                            swal.close();
+                            $("body .sshkey_select").load(location.href + " .sshkey_select");
+                        }
                     }
                 });
             });
@@ -173,12 +207,19 @@ $(document).ready(function(){
                         $.ajax({
                             type:'POST',
                             url:location.href,
-                            data: {'delete':id, 'csrfmiddlewaretoken':token, 'ops':ops, 'svname': svname},
-                            success: function(){
-                                setTimeout(function(){
-                                    $('.list_vm_client').DataTable().ajax.reload(null,false);
-                                    swal.close();
-                                }, 4000);
+                            data: {'delete':id, 'csrfmiddlewaretoken':token, 'svname': svname},
+                            success: function(msg){
+                                if (msg == 'Đã có lỗi xảy ra!'){
+                                    swal({
+                                        type: 'error',
+                                        title: msg,
+                                    });
+                                }else{
+                                    setTimeout(function(){
+                                        $('.list_vm_client').DataTable().ajax.reload(null,false);
+                                        swal.close();
+                                    }, 4000);
+                                }
                             }
                         });
                     }else if (action == 'start'){
@@ -193,12 +234,19 @@ $(document).ready(function(){
                         $.ajax({
                             type:'POST',
                             url:location.href,
-                            data: {'start':id, 'csrfmiddlewaretoken':token, 'ops':ops, 'svname': svname},
-                            success: function(){
-                                setTimeout(function(){
-                                    $('.list_vm_client').DataTable().ajax.reload(null,false);
-                                    swal.close();
-                                }, 4000);
+                            data: {'start':id, 'csrfmiddlewaretoken':token, 'svname': svname},
+                            success: function(msg){
+                                if (msg == 'Đã có lỗi xảy ra!'){
+                                    swal({
+                                        type: 'error',
+                                        title: msg,
+                                    });
+                                }else{
+                                    setTimeout(function(){
+                                        $('.list_vm_client').DataTable().ajax.reload(null,false);
+                                        swal.close();
+                                    }, 4000);
+                                }
                             }
                         });
                     }else if (action == 'reboot'){
@@ -213,12 +261,19 @@ $(document).ready(function(){
                         $.ajax({
                             type:'POST',
                             url:location.href,
-                            data: {'reboot':id, 'csrfmiddlewaretoken':token, 'ops':ops, 'svname': svname},
-                            success: function(){
-                                setTimeout(function(){
-                                    $('.list_vm_client').DataTable().ajax.reload(null,false);
-                                    swal.close();
-                                }, 4000);
+                            data: {'reboot':id, 'csrfmiddlewaretoken':token, 'svname': svname},
+                            success: function(msg){
+                                if (msg == 'Đã có lỗi xảy ra!'){
+                                    swal({
+                                        type: 'error',
+                                        title: msg,
+                                    });
+                                }else{
+                                    setTimeout(function(){
+                                        $('.list_vm_client').DataTable().ajax.reload(null,false);
+                                        swal.close();
+                                    }, 4000);
+                                }
                             }
                         });
                     }else if (action == 'hardreboot'){
@@ -233,12 +288,19 @@ $(document).ready(function(){
                         $.ajax({
                             type:'POST',
                             url:location.href,
-                            data: {'hardreboot':id, 'csrfmiddlewaretoken':token, 'ops':ops},
-                            success: function(){
-                                setTimeout(function(){
-                                    $('.list_vm_client').DataTable().ajax.reload(null,false);
-                                    swal.close();
-                                }, 4000);
+                            data: {'hardreboot':id, 'csrfmiddlewaretoken':token},
+                            success: function(msg){
+                                if (msg == 'Đã có lỗi xảy ra!'){
+                                    swal({
+                                        type: 'error',
+                                        title: msg,
+                                    });
+                                }else{
+                                    setTimeout(function(){
+                                        $('.list_vm_client').DataTable().ajax.reload(null,false);
+                                        swal.close();
+                                    }, 4000);
+                                }
                             }
                         });
                     }else if (action == 'stop'){
@@ -253,12 +315,19 @@ $(document).ready(function(){
                         $.ajax({
                             type:'POST',
                             url:location.href,
-                            data: {'stop':id, 'csrfmiddlewaretoken':token, 'ops':ops, 'svname': svname},
-                            success: function(){
-                                setTimeout(function(){
-                                    $('.list_vm_client').DataTable().ajax.reload(null,false);
-                                    swal.close();
-                                }, 4000);
+                            data: {'stop':id, 'csrfmiddlewaretoken':token, 'svname': svname},
+                            success: function(msg){
+                                if (msg == 'Đã có lỗi xảy ra!'){
+                                    swal({
+                                        type: 'error',
+                                        title: msg,
+                                    });
+                                }else{
+                                    setTimeout(function(){
+                                        $('.list_vm_client').DataTable().ajax.reload(null,false);
+                                        swal.close();
+                                    }, 4000);
+                                }
                             }
                         });
                     }
