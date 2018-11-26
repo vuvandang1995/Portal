@@ -116,6 +116,7 @@ class Flavors(models.Model):
 class Sshkeys(models.Model):
     ops = models.ForeignKey('Ops', models.CASCADE, db_column='ops')
     name = models.CharField(max_length=255)
+    owner = models.ForeignKey('Myuser', models.CASCADE, db_column='owner')
 
     class Meta:
         managed = True

@@ -98,11 +98,8 @@ class nova():
     def find_image(self, image):
         return self.nova.glance.find_image(image)
 
-    def check_volume(self, name):
-        return self.cinder.volumes.find(name=name).status
-
-    def find_volume(self, name):
-        return self.cinder.volumes.find(name=name)
+    def check_volume(self, id):
+        return self.cinder.volumes.find(id=id)
 
     def find_network(self, network):
         return self.nova.neutron.find_network(network).id

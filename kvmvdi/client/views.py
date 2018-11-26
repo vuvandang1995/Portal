@@ -192,7 +192,7 @@ def instances(request):
                     #         if connect.find_flavor(ram=ram, vcpus=vcpus, disk=disk):
                     #             check = True
                     #     connect.createVM(svname=svname, flavor=connect.find_flavor(ram=ram, vcpus=vcpus, disk=disk), image=connect.find_image(image), network_id=connect.find_network(network), max_count=count)
-                    user_admin = MyUser.objects.get(username=name)
+                    user_admin = MyUser.objects.get(username='admin')
                     if user_admin.is_active and user_admin.is_adminkvm:
                         if user_admin.token_id is None or user_admin.check_expired() == False:
                             user_admin.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
@@ -209,18 +209,21 @@ def instances(request):
                             if connect_neutron.free_ips(ip_net=ip_net) != 0:
                                 net = ip_net
                                 break
+                        if net == '':
+                            return HttpResponse("No IP availability!")
                         if connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=request.POST['type_disk']):
+                            volume = connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=request.POST['type_disk'])
                             check = False
                             while check == False:
-                                if connect.check_volume(name=svname) == 'available':
+                                if connect.check_volume(id=volume.id).status == 'available':
                                     check = True
-                                    volume_id = connect.find_volume(name=svname).id
+                                    volume_id = volume.id
                         else:
-                            return HttpResponse("Xay ra loi khi tao Server!")
-                        user.money = str(float(user.money) - float(price))
-                        user.save()
+                            return HttpResponse("Xay ra loi khi tao volume!")
                         serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, volume_id=volume_id, key_name=sshkey, admin_pass=rootpass, max_count=count)
                         if serverVM:
+                            user.money = str(float(user.money) - float(price))
+                            user.save()
                             Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
                             Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=Server.objects.get(name=svname))
                             time.sleep(5)
@@ -232,7 +235,7 @@ def instances(request):
                             mail_subject = 'Thông tin server của bạn là: '
                             message = render_to_string('client/send_info_server.html', {
                                 'user': user,
-                                'IP': connect.get_server(serverVM.id).networks[NET_provider][0]
+                                'IP': connect.get_server(serverVM.id).networks[network]
                             })
                             to_email = user.email
                             email = EmailMessage(
@@ -364,7 +367,7 @@ def instances(request):
                 )
                 thread = EmailThread(email)
                 thread.start()
-                Sshkeys.objects.create(ops=ops, name=sshkeyname)
+                Sshkeys.objects.create(ops=ops, name=sshkeyname,owner=user)
                 # server = Server.objects.get(name=request.POST['svname'])
                 # server.delete()
         flavors = []
@@ -374,7 +377,7 @@ def instances(request):
             flavors.append(json.loads(fl['thong_so']))
         for im in Images.objects.filter(ops=Ops.objects.get(ip=OPS_IP)).values('name'):
             images.append((im['name']))
-        for sshkey in Sshkeys.objects.filter(ops=Ops.objects.get(ip=OPS_IP)).values('name'):
+        for sshkey in Sshkeys.objects.filter(ops=Ops.objects.get(ip=OPS_IP), owner=user).values('name'):
             sshkeys.append((sshkey['name']))
         return render(request, 'client/instances.html',{'username': mark_safe(json.dumps(user.username)),
                                 'OPS_IP': OPS_IP,
@@ -508,7 +511,17 @@ def home_data(request, ops_ip):
                             '''
                     else:
                         status = '<span class="label label-danger">'+item._info['status']+'</span>'
-                        actions = ''
+                        actions = '''
+                            <div class='nav-item'>
+                                <button type="button" class="btn btn-primary dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Actions <span class="caret"></span></button>
+                                <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul">
+                                    <li>
+                                        <a data-batch-action="true" class="data-table-action control" name="'''+ops_ip+'''_'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                    </li>
+                                </ul>
+                            <div>
+                            '''
                             
                     created = '<p>'+item._info['created']+'</p>'
                     

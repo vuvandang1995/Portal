@@ -1,4 +1,5 @@
-from superadmin.plugin import opsutils
+from keystoneauth1.identity import v3
+from keystoneauth1 import session
 from neutronclient.v2_0 import client as client
 
 class neutron_():
@@ -8,6 +9,6 @@ class neutron_():
         self.neutron = client.Client(session=self.sess)
     
     def free_ips(self, ip_net):
-        total_ips = neutron.show_network_ip_availability(network=ip_net)['network_ip_availability']['total_ips']
-        used_ips = neutron.show_network_ip_availability(network=ip_net)['network_ip_availability']['used_ips']
+        total_ips = self.neutron.show_network_ip_availability(network=ip_net)['network_ip_availability']['total_ips']
+        used_ips = self.neutron.show_network_ip_availability(network=ip_net)['network_ip_availability']['used_ips']
         return total_ips-used_ips

@@ -50,7 +50,7 @@ $(document).ready(function(){
             url:location.href,
             data: {'svname': svname, 'type_disk': type_disk, 'rootpass': rootpass, 'sshkey': sshkey, 'price': price,'ops': ops, 'description': description, 'csrfmiddlewaretoken':token, 'image': image, 'flavor': flavor, 'count': count, 'project': project},
             success: function(msg){
-                if (msg == "Vui long nap them tien vao tai khoan!"){
+                if ((msg == "Vui long nap them tien vao tai khoan!") || (msg == "No IP availability!") || (msg == "Xay ra loi khi tao volume!")){
                     swal({
                         type: 'warning',
                         title: msg,
