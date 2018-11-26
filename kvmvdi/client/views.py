@@ -16,10 +16,11 @@ import os
 
 from superadmin.plugin.novaclient import nova
 from superadmin.plugin.get_tokens import getToken
+from superadmin.plugin.neutronclient_ import neutron_
 
 from django.utils import timezone
-from kvmvdi.settings import OPS_IP, NET_provider, DISK_HDD, DISK_SSD, \
-    OPS_TOKEN_EXPIRED
+from kvmvdi.settings import OPS_IP, list_net_provider, DISK_HDD, DISK_SSD, \
+    OPS_TOKEN_EXPIRED, OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT
 import time
 
                 
@@ -191,44 +192,56 @@ def instances(request):
                     #         if connect.find_flavor(ram=ram, vcpus=vcpus, disk=disk):
                     #             check = True
                     #     connect.createVM(svname=svname, flavor=connect.find_flavor(ram=ram, vcpus=vcpus, disk=disk), image=connect.find_image(image), network_id=connect.find_network(network), max_count=count)
-
+                    user_admin = MyUser.objects.get(username=name)
+                    if user_admin.is_active and user_admin.is_adminkvm:
+                        if user_admin.token_id is None or user_admin.check_expired() == False:
+                            user_admin.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                            user_admin.token_id = getToken(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT, user_domain_id='default', project_domain_id='default')
+                            user_admin.save()
+                    connect_neutron = neutron_(ip=ops.ip, token_id=user_admin.token_id, project_name=OPS_PROJECT, project_domain_id='default')
+                    net = ''
                     price = ((int(flavor.split(',')[0])/1024) * 3 + int(flavor.split(',')[1]) * 2 + int(flavor.split(',')[2])) * count * 10000
                     if price <= float(user.money):
                         fl = connect.find_flavor(ram=int(flavor.split(',')[0]), vcpus=int(flavor.split(',')[1]), disk=int(flavor.split(',')[2]))
                         im = connect.find_image(image)
-                        # net = connect.find_network('public')
-                        net = connect.find_network(NET_provider)
-                        connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=request.POST['type_disk'])
-                        check = False
-                        while check == False:
-                            if connect.check_volume(name=svname) == 'available':
-                                check = True
-                                volume_id = connect.find_volume(name=svname).id
+                        for network in list_net_provider:
+                            ip_net = connect.find_network(network)
+                            if connect_neutron.free_ips(ip_net=ip_net) != 0:
+                                net = ip_net
+                                break
+                        if connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=request.POST['type_disk']):
+                            check = False
+                            while check == False:
+                                if connect.check_volume(name=svname) == 'available':
+                                    check = True
+                                    volume_id = connect.find_volume(name=svname).id
+                        else:
+                            return HttpResponse("Xay ra loi khi tao Server!")
                         user.money = str(float(user.money) - float(price))
                         user.save()
                         serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, volume_id=volume_id, key_name=sshkey, admin_pass=rootpass, max_count=count)
-                        Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
-                        Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=Server.objects.get(name=svname))
-                        time.sleep(5)
-                        while (1):
-                            if connect.get_server(serverVM.id).status != 'BUILD':
-                                break
-                            else:
-                                time.sleep(2)
-                        mail_subject = 'Thông tin server của bạn là: '
-                        message = render_to_string('client/send_info_server.html', {
-                            'user': user,
-                            'IP': connect.get_server(serverVM.id).networks[NET_provider][0]
-                            # 'IP': 'fasdfasdfasdfew'
-                        })
-                        to_email = user.email
-                        email = EmailMessage(
-                                    mail_subject, message, to=[to_email]
-                        )
-                        # print(to_email)
-                        # email.send()
-                        thread = EmailThread(email)
-                        thread.start()
+                        if serverVM:
+                            Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
+                            Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=Server.objects.get(name=svname))
+                            time.sleep(5)
+                            while (1):
+                                if connect.get_server(serverVM.id).status != 'BUILD':
+                                    break
+                                else:
+                                    time.sleep(2)
+                            mail_subject = 'Thông tin server của bạn là: '
+                            message = render_to_string('client/send_info_server.html', {
+                                'user': user,
+                                'IP': connect.get_server(serverVM.id).networks[NET_provider][0]
+                            })
+                            to_email = user.email
+                            email = EmailMessage(
+                                        mail_subject, message, to=[to_email]
+                            )
+                            thread = EmailThread(email)
+                            thread.start()
+                        else:
+                            return HttpResponse("Xay ra loi khi tao Server!")
                     else:
                         return HttpResponse("Vui long nap them tien vao tai khoan!")
                 else:

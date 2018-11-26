@@ -157,7 +157,7 @@ RULE_USER = '_member_'
 RULE_ADMIN = 'admin'
 
 # NET_provider = 'provider'
-NET_provider = 'public'
+list_net_provider = ['public']
 NET_SELF = ''
 
 DISK_SSD = 'iscsi'

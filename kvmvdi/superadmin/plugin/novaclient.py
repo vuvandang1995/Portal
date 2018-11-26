@@ -58,9 +58,9 @@ class nova():
 
     def create_volume(self, name, imageRef, size, volume_type):
         if int(size) > 0:
-            self.cinder.volumes.create(size=size, name=name, imageRef=imageRef, volume_type=volume_type)
+            return self.cinder.volumes.create(size=size, name=name, imageRef=imageRef, volume_type=volume_type)
         else:
-            self.cinder.volumes.create(size='10', name=name, imageRef=imageRef, volume_type=volume_type)
+            return self.cinder.volumes.create(size='10', name=name, imageRef=imageRef, volume_type=volume_type)
 
     def delete_vm(self, svid):
         self.nova.servers.delete(svid)
