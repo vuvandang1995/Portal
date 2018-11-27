@@ -256,6 +256,7 @@ def home_data(request, ops_ip):
 
 def user_login(request):
     user = request.user
+    mess_register_ok = 'Hãy kiểm tra email của bạn để hoàn tất đăng ký'
     if user.is_authenticated  and user.is_adminkvm:
         return HttpResponseRedirect('/home')
     elif user.is_authenticated  and user.is_adminkvm == False:
@@ -317,23 +318,39 @@ def user_login(request):
             elif 'firstname' and 'email' and 'password2' in request.POST:
                 user_form = UserForm(request.POST)
                 if user_form.is_valid():
+                    current_site = get_current_site(request)
                     user = user_form.save()
-                    if user.username != 'admin':
-                        connect = keystone(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT,
-                                        user_domain_id='default', project_domain_id='default')
-                        connect.create_project(name=user.username, domain='default')
-                        check = False
-                        while check == False:
-                            if connect.find_project(user.username):
-                                connect.create_user(name=user.username, domain='default', project=user.username,
-                                                    password=user.username, email=request.POST['email'])
-                                check = True
-                        check1 = False
-                        while check1 == False:
-                            if connect.find_user(user.username):
-                                check1 = True
-                        connect.add_user_to_project(user=user.username, project=user.username)
-                    return redirect('/')
+
+                    mail_subject = 'Activate your blog account.'
+                    message = render_to_string('kvmvdi/acc_active_email.html', {
+                        'user': user,
+                        'domain': current_site.domain,
+                        'uid':urlsafe_base64_encode(force_bytes(user.id)).decode(),
+                        'token':account_activation_token.make_token(user),
+                    })
+                    to_email = user.email
+                    email = EmailMessage(
+                                mail_subject, message, to=[to_email]
+                    )
+                    thread = EmailThread(email)
+                    thread.start()
+                    return render(request, 'kvmvdi/login.html',{'error':mess_register_ok})
+                    
+                    # if user.username != 'admin':
+                    #     connect = keystone(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT,
+                    #                     user_domain_id='default', project_domain_id='default')
+                    #     connect.create_project(name=user.username, domain='default')
+                    #     check = False
+                    #     while check == False:
+                    #         if connect.find_project(user.username):
+                    #             connect.create_user(name=user.username, domain='default', project=user.username,
+                    #                                 password=user.username, email=request.POST['email'])
+                    #             check = True
+                    #     check1 = False
+                    #     while check1 == False:
+                    #         if connect.find_user(user.username):
+                    #             check1 = True
+                    #     connect.add_user_to_project(user=user.username, project=user.username)
                 else:
                     error = ''
                     for field in user_form:
@@ -341,6 +358,34 @@ def user_login(request):
                     return render(request, 'kvmvdi/login.html',{'error':error})
         return render(request, 'kvmvdi/login.html')
 
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = MyUser.objects.get(id=uid)
+    except(TypeError, ValueError, OverflowError, MyUser.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        if user.username != 'admin':
+            connect = keystone(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT,
+                            user_domain_id='default', project_domain_id='default')
+            connect.create_project(name=user.username, domain='default')
+            check = False
+            while check == False:
+                if connect.find_project(user.username):
+                    connect.create_user(name=user.username, domain='default', project=user.username,
+                                        password=user.username, email=user.email)
+                    check = True
+            check1 = False
+            while check1 == False:
+                if connect.find_user(user.username):
+                    check1 = True
+            connect.add_user_to_project(user=user.username, project=user.username)
+        return redirect('/')
+    else:
+        return HttpResponse('Đường dẫn không hợp lệ!')
 
 def resetpwd(request, uidb64, token):
     try:

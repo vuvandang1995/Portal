@@ -53,7 +53,7 @@ class MyUser(AbstractBaseUser):
     fullname = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
     key = models.CharField(max_length=100)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_adminkvm = models.BooleanField(default=False)
     token_id = models.CharField(max_length=255, null=True)
