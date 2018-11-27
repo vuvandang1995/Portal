@@ -181,7 +181,10 @@ def instances(request):
                     # description = request.POST['description']
                     image = request.POST['image']
                     flavor = request.POST['flavor']
-                    rootpass = request.POST['rootpass']
+                    if request.POST['rootpass'] != '':
+                        rootpass = "#cloud-config\npassword: "+request.POST['rootpass']+"\nssh_pwauth: True\nchpasswd:\n expire: false"
+                    else:
+                        rootpass = "#cloud-config\npassword: 123456\nssh_pwauth: True\nchpasswd:\n expire: false"
                     try:
                         sshkey = request.POST['sshkey']
                     except:
@@ -205,7 +208,7 @@ def instances(request):
                     #         if connect.find_flavor(ram=ram, vcpus=vcpus, disk=disk):
                     #             check = True
                     #     connect.createVM(svname=svname, flavor=connect.find_flavor(ram=ram, vcpus=vcpus, disk=disk), image=connect.find_image(image), network_id=connect.find_network(network), max_count=count)
-                    if svname == '' or image == '' or flavor == '' or request.POST['type_disk'] == '' or rootpass == '':
+                    if svname == '' or image == '' or flavor == '' or request.POST['type_disk'] == '':
                         return HttpResponse('Xay ra loi khi tao Server!')
                     else:
                         try:
@@ -255,7 +258,7 @@ def instances(request):
                                 else:
                                     return HttpResponse("Xay ra loi khi tao volume!")
                                 try:
-                                    serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, volume_id=volume_id, key_name=sshkey, admin_pass=rootpass, max_count=count)
+                                    serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, volume_id=volume_id, userdata=rootpass, key_name=sshkey, admin_pass=rootpass, max_count=count)
                                 except:
                                     return HttpResponse("Xay ra loi khi tao Server!")
                                 if serverVM:
@@ -266,7 +269,6 @@ def instances(request):
                                     time.sleep(5)
                                     while (1):
                                         if connect.get_server(serverVM.id).status != 'BUILD':
-                                            # connect.resetpass(svid=serverVM.id, newpass=rootpass)
                                             break
                                         else:
                                             time.sleep(2)
