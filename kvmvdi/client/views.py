@@ -273,16 +273,20 @@ def instances(request):
                                             time.sleep(2)
                                     mail_subject = 'Thông tin server của bạn là: '
                                     if private_network == '0':
-                                        message = render_to_string('client/send_info_server.html', {
-                                            'user': user,
-                                            'IP_Public': connect.get_server(serverVM.id).networks[network],
-                                        })
+                                        IP_Private = 'Khong co'
                                     else:
-                                        message = render_to_string('client/send_info_server.html', {
-                                            'user': user,
-                                            'IP_Public': connect.get_server(serverVM.id).networks[network],
-                                            'IP_Private': connect.get_server(serverVM.id).networks[user.username]
-                                        })
+                                        IP_Private = connect.get_server(serverVM.id).networks[user.username]
+                                    if request.POST['rootpass'] == '':
+                                        rootpassword = '123456'
+                                    else:
+                                        rootpassword = request.POST['rootpass']
+                                    message = render_to_string('client/send_info_server.html', {
+                                        'user': user,
+                                        'IP_Public': connect.get_server(serverVM.id).networks[network],
+                                        'IP_Private': IP_Private,
+                                        'Key_pair': sshkey,
+                                        'Login': 'root/'+rootpassword
+                                    })
                                     to_email = user.email
                                     email = EmailMessage(
                                                 mail_subject, message, to=[to_email]
