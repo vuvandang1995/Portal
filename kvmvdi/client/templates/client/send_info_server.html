@@ -1,5 +1,7 @@
 {% autoescape off %}
 Xin chào {{ user.fullname }},
 Thông tin server của bạn là:
-IP: {{IP}}
+Public IP: {{IP_Public}}
+{% if {{IP_Private}}%}
+Private IP: {{IP_Private}}
 {% endautoescape %}
