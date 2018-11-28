@@ -280,11 +280,15 @@ def instances(request):
                                         rootpassword = '123456'
                                     else:
                                         rootpassword = request.POST['rootpass']
+                                    if sshkey == None:
+                                        ssh_key = 'Khong co'
+                                    else:
+                                        ssh_key = sshkey
                                     message = render_to_string('client/send_info_server.html', {
                                         'user': user,
                                         'IP_Public': connect.get_server(serverVM.id).networks[network],
                                         'IP_Private': IP_Private,
-                                        'Key_pair': sshkey,
+                                        'Key_pair': ssh_key,
                                         'Login': 'root/'+rootpassword
                                     })
                                     to_email = user.email
