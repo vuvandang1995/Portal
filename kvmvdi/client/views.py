@@ -178,6 +178,8 @@ def instances(request):
                     image = request.POST['image']
                     flavor = request.POST['flavor']
                     private_network = request.POST['private_network']
+                    if private_network == '1':
+                        private_network = user.username
                     if request.POST['rootpass'] != '':
                         rootpass = "#cloud-config\npassword: "+request.POST['rootpass']+"\nssh_pwauth: True\nchpasswd:\n expire: false"
                     else:
