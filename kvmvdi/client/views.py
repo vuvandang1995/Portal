@@ -275,7 +275,7 @@ def instances(request):
                                     if private_network == '0':
                                         IP_Private = 'Khong co'
                                     else:
-                                        IP_Private = connect.get_server(serverVM.id).networks[user.username]
+                                        IP_Private = connect.get_server(serverVM.id).networks[user.username][0]
                                     if request.POST['rootpass'] == '':
                                         rootpassword = '123456'
                                     else:
@@ -286,7 +286,7 @@ def instances(request):
                                         ssh_key = sshkey
                                     message = render_to_string('client/send_info_server.html', {
                                         'user': user,
-                                        'IP_Public': connect.get_server(serverVM.id).networks[network],
+                                        'IP_Public': connect.get_server(serverVM.id).networks[network][0],
                                         'IP_Private': IP_Private,
                                         'Key_pair': ssh_key,
                                         'Login': 'root/'+rootpassword
