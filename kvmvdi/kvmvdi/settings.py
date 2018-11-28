@@ -143,24 +143,24 @@ EMAIL_HOST_PASSWORD = 'meditech2018'
 EMAIL_PORT = 587
 
 
-# OPS_IP = '192.168.40.11'
-OPS_IP = '192.168.40.146'
+OPS_IP = '192.168.40.11'
+# OPS_IP = '192.168.40.146'
 OPS_ADMIN = 'admin'
-# OPS_PASSWORD = 'Welcome123'
+OPS_PASSWORD = 'Welcome123'
 OPS_PASSWORD = 'admin'
 OPS_PROJECT = 'admin'
 OPS_TOKEN_EXPIRED = 1500
 
-# RULE_USER = 'user'
-# RULE_ADMIN = 'admin'
-ROLE_USER = '_member_'
+ROLE_USER = 'user'
 ROLE_ADMIN = 'admin'
+# ROLE_USER = '_member_'
+# ROLE_ADMIN = 'admin'
 
-# NET_provider = 'provider'
-list_net_provider = ['public']
+# list_net_provider = ['public']
+list_net_provider = ['provider']
 NET_SELF = ''
 
-DISK_SSD = 'iscsi'
+DISK_SSD = 'ceph-ssd'
 DISK_HDD = 'ceph-hdd'
 
 VNPAY_RETURN_URL = 'http://localhost:8000/payment_return'  # get from config
