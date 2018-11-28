@@ -487,13 +487,19 @@ def home_data(request):
                 for item in connect.list_server():
                     # print(item.status)
                     # print(dir(item))
+                    print(item.networks)
                     try:
                         name = '''<a href="/client/show_instances/'''+item._info['id']+'''"><p>'''+item._info['name']+'''</p></a>'''
                     except:
                         name = '<p></p>'
 
                     try:
-                        ip = '<p>'+next(iter(item.networks.values()))[0]+'</p>'
+                        ip = '<p>'
+                        for key, value in item.networks.items():
+                            ip += key + '<br>'
+                            for i_p in value:
+                                ip += i_p + '<br>'
+                        ip += '</p>'
                     except:
                         ip = '<p></p>'
 
