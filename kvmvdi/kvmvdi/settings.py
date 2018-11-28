@@ -153,8 +153,8 @@ OPS_TOKEN_EXPIRED = 1500
 
 # RULE_USER = 'user'
 # RULE_ADMIN = 'admin'
-RULE_USER = '_member_'
-RULE_ADMIN = 'admin'
+ROLE_USER = '_member_'
+ROLE_ADMIN = 'admin'
 
 # NET_provider = 'provider'
 list_net_provider = ['public']

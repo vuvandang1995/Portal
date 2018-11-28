@@ -383,6 +383,11 @@ def activate(request, uidb64, token):
                 if connect.find_user(user.username):
                     check1 = True
             connect.add_user_to_project(user=user.username, project=user.username)
+            connect_user = keystone(ip=OPS_IP, username=user.username, password=user.username, project_name=user.username,
+                            user_domain_id='default', project_domain_id='default')
+            
+            
+            connect_user.create_network(user.username)
         return redirect('/')
     else:
         return HttpResponse('Đường dẫn không hợp lệ!')

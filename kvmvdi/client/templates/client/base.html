@@ -144,13 +144,12 @@
                                         </a>
                                     </li>
                                     <li class="item-nav">
-                                        <a href="#">
+                                        <a href="{% url 'client:networks' %}">
                                             <img alt="" src="{% static 'images/portal/img/Networks.png' %}">
                                                 Networks
-
                                         </a>
                                     </li>
-                                    <li class="item-nav">
+                                    {% comment %} <li class="item-nav">
                                         <a href="#">
                                             <img alt="" src="{% static 'images/portal/img/Securitygruops.png' %}">
                                                 Security Group
@@ -163,28 +162,26 @@
                                                 Floating IPs
 
                                         </a>
-                                    </li>
+                                    </li> {% endcomment %}
                                     <li class="item-nav">
-                                        <a href="#">
+                                        <a href="{% url 'client:sshkeys' %}">
                                             <img alt="" src="{% static 'images/portal/img/SSHkeys.png' %}">
                                                 SSH Keys
-
                                         </a>
                                     </li>
                                     <li class="item-nav">
-                                        <a href="#">
+                                        <a href="{% url 'client:volumes' %}">
                                             <img alt="" src="{% static 'images/portal/img/round-view_column-24px.png' %}">
                                                 Volumes
-
                                         </a>
                                     </li>
-                                    <li class="item-nav">
+                                    {% comment %} <li class="item-nav">
                                         <a href="#">
                                             <img alt="" src="{% static 'images/portal/img/Myimages.png' %}">
                                                 My Image
 
                                         </a>
-                                    </li>
+                                    </li> {% endcomment %}
                                 </ul>
                                 <li class="collapsed" data-target="#new" data-toggle="collapse">
                                     <a href="#">

@@ -62,7 +62,6 @@ def home(request):
     else:
         return HttpResponseRedirect('/')
 
-
 def show_instances(request, serverid):
     user = request.user
     if user.is_authenticated and user.is_adminkvm == False:
@@ -129,7 +128,6 @@ def show_instances(request, serverid):
                     connect.reboot_vm_hard(svid=svid)
                 except:
                     return HttpResponse("Đã có lỗi xảy ra!")
-                
             elif 'rebuild' in request.POST:
                 # print(request.POST)
                 ops = Ops.objects.get(ip=OPS_IP)
@@ -146,7 +144,6 @@ def show_instances(request, serverid):
                     connect.rebuild(svid=svid, image=connect.find_image(request.POST['image']), disk_config=request.POST['disk_partition'])
                 except:
                     return HttpResponse("Đã có lỗi xảy ra!")
-                
         return render(request, 'client/show_instances.html',{'username': mark_safe(json.dumps(user.username)),
                                                                 'servername': sv._info['name'],
                                                                 'serverid': sv._info['id'],
@@ -159,7 +156,6 @@ def show_instances(request, serverid):
                                                                 })
     else:
         return HttpResponseRedirect('/')
-
 
 def instances(request):
     user = request.user
@@ -181,6 +177,7 @@ def instances(request):
                     # description = request.POST['description']
                     image = request.POST['image']
                     flavor = request.POST['flavor']
+                    private_network = request.POST['private_network']
                     if request.POST['rootpass'] != '':
                         rootpass = "#cloud-config\npassword: "+request.POST['rootpass']+"\nssh_pwauth: True\nchpasswd:\n expire: false"
                     else:
@@ -258,7 +255,7 @@ def instances(request):
                                 else:
                                     return HttpResponse("Xay ra loi khi tao volume!")
                                 try:
-                                    serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, volume_id=volume_id, userdata=rootpass, key_name=sshkey, admin_pass=rootpass, max_count=count)
+                                    serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, userdata=rootpass, key_name=sshkey, admin_pass=rootpass, max_count=count)
                                 except:
                                     return HttpResponse("Xay ra loi khi tao Server!")
                                 if serverVM:
@@ -457,7 +454,6 @@ def instances(request):
     else:
         return HttpResponseRedirect('/')
 
-
 def home_data(request):
     user = request.user
 
@@ -603,11 +599,33 @@ def home_data(request):
                 json_data = json.loads(json.dumps(big_data))
                 return JsonResponse(json_data)
 
+def networks(request):
+    user = request.user
+    if user.is_authenticated and user.is_adminkvm == False:
+        return render(request, 'client/networks.html',{'username': mark_safe(json.dumps(user.username)),
+                                })
+    else:
+        return HttpResponseRedirect('/')
+
+def sshkeys(request):
+    user = request.user
+    if user.is_authenticated and user.is_adminkvm == False:
+        return render(request, 'client/sshkeys.html',{'username': mark_safe(json.dumps(user.username)),
+                                })
+    else:
+        return HttpResponseRedirect('/')
+
+def volumes(request):
+    user = request.user
+    if user.is_authenticated and user.is_adminkvm == False:
+        return render(request, 'client/volumes.html',{'username': mark_safe(json.dumps(user.username)),
+                                })
+    else:
+        return HttpResponseRedirect('/')
 
 def user_logout(request):
     logout(request)
     return HttpResponseRedirect('/')
-
 
 def user_profile(request):
     user = request.user
@@ -616,7 +634,6 @@ def user_profile(request):
     else:
         return HttpResponseRedirect('/')
 
-
 def user_oders(request):
     user = request.user
     oders = Oders.objects.filter(owner=user)
@@ -624,5 +641,3 @@ def user_oders(request):
         return render(request, 'client/oders.html', {'username': mark_safe(json.dumps(user.username)), 'oders': oders})
     else:
         return HttpResponseRedirect('/')
-    
-

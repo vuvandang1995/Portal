@@ -6,6 +6,12 @@ $(document).ready(function(){
         var rootpass = $("input[name=rootpass]").val();
         // var image = document.getElementById("mySelect_image").value;
         var type_disk = document.getElementById("type_disk").value;
+        var private_network;
+        if ($('#private_network').checked == true){
+            private_network = 1;
+        }else{
+            private_network = 0;
+        }
         var image;
         var flavor;
         var sshkey;
@@ -54,7 +60,7 @@ $(document).ready(function(){
             $.ajax({
                 type:'POST',
                 url:location.href,
-                data: {'svname': svname, 'type_disk': type_disk, 'rootpass': rootpass, 'sshkey': sshkey, 'price': price, 'description': description, 'csrfmiddlewaretoken':token, 'image': image, 'flavor': flavor, 'count': count, 'project': project},
+                data: {'svname': svname, 'type_disk': type_disk, 'private_network': private_network, 'rootpass': rootpass, 'sshkey': sshkey, 'price': price, 'description': description, 'csrfmiddlewaretoken':token, 'image': image, 'flavor': flavor, 'count': count, 'project': project},
                 success: function(msg){
                     if ((msg == "Vui long nap them tien vao tai khoan!") || (msg == "No IP availability!") || (msg == "Xay ra loi khi tao volume!")  || (msg == "Xay ra loi khi tao Server!") || (msg == "Xay ra loi khi check flavor!") || (msg == "Xay ra loi khi check image!") || (msg == "Xay ra loi khi check network!") || (msg == "Tên server bị trùng!")){
                         swal({
