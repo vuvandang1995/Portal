@@ -51,7 +51,7 @@ class nova():
         # self.nova.servers.create(svname, flavor=flavor, image=image, nics = [{'net-id':network_id}], max_count=max_count, availability_zone='nova:compute2')
             return self.nova.servers.create(svname, flavor=flavor, image=image, nics = [{'net-id':network_id}], block_device_mapping = {'vda': volume_id}, userdata=userdata, key_name=key_name, admin_pass=admin_pass, max_count=max_count)
         else:
-            id_private_net = self.nova.neutron.find_network(svname).id
+            id_private_net = self.nova.neutron.find_network(private_network).id
             return self.nova.servers.create(svname, flavor=flavor, image=image, nics = [{'net-id':network_id}, {'net-id':id_private_net}], block_device_mapping = {'vda': volume_id}, userdata=userdata, key_name=key_name, admin_pass=admin_pass, max_count=max_count)
 
     def createFlavor(self, svname, ram, vcpus, disk):
