@@ -231,7 +231,7 @@ def instances(request):
                         if price <= float(user.money):
                             try:
                                 try:
-                                    fl = connect.find_flavor(ram=int(flavor.split(',')[0]), vcpus=int(flavor.split(',')[1]), disk=0)
+                                    fl = connect.find_flavor(id=flavor.split(',')[3])
                                 except:
                                     return HttpResponse("Xay ra loi khi check flavor!")
                                 try:
@@ -243,7 +243,7 @@ def instances(request):
                                         ip_net = connect.find_network(network)
                                     except:
                                         return HttpResponse("Xay ra loi khi check network!")
-                                    if connect_neutron.free_ips(ip_net=ip_net) != 0:
+                                    if connect_neutron.free_ips(ip_net=ip_net) > 2:
                                         net = ip_net
                                         break
                                 if net == '':

@@ -229,7 +229,7 @@
                         <form class="flavor_select">
                             {% for fl in flavors%}
                                 <label>
-                                    <input type="radio" name="image" value="{{fl.ram}},{{fl.vcpus}},{{fl.disk}}">
+                                    <input type="radio" name="image" value="{{fl.ram}},{{fl.vcpus}},{{fl.disk}},{{fl.i_d}}">
                                     <div class="all flavor_ row">
                                         <div class="col-md-5">
                                             <img src="{% static 'images/portal/img/server.png' %}" alt="" height="62px" width="62px">

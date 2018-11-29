@@ -36,6 +36,9 @@ class nova():
         for image in self.nova.glance.list():
             image_list.append(image.name)
         return image_list
+    
+    def list_Images(self):
+        return self.nova.glance.list()
 
     def list_flavor(self):
         fl = self.nova.flavors.list()
