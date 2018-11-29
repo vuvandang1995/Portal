@@ -160,6 +160,15 @@
                                 </button>
                             </a>
                         </li>
+
+                        <li> 
+                            <a aria-expanded="false"><i class="fa fa-plus"></i> 
+                                <button type="button" class="btn btn-success" data-toggle="modal" data-title="add_ops" data-target="#flavor">
+                                    Add Flavors
+                                </button>
+                            </a>
+                        </li>
+                        <li> <a href="{% url 'superadmin:flavors' %}" aria-expanded="false"><i class="fa fa-envelope"></i><span class="hide-menu">Flavors</span></a></li>
                         
                     </ul>
                 </nav>
@@ -346,6 +355,39 @@
                                         <div class="modal-footer">
                                             <button type="submit" class="btn btn-primary" value="OK" id="i_submit" >Create</button>
                                             <button type="button" class="btn btn-default" data-dismiss="modal" id="close_modal">Close</button>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal" id="flavor">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content ">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">Create Flavor</h4>
+                                        </div>
+                                        <div class="modal-body form-group">
+                                            <label><b>Flavor Name</b></label>
+                                            <input class="form-control" type="text" placeholder="Flavor Name" name="flavorname" required>
+                                            <br>
+                                            <b> Ram </b><input class="price1" type="number" name="ram" min="0" max="1000" step="1" value="1" style="width: 60px" required>
+                                            <b> Vcpus </b><input class="price1" type="number" name="vcpus" min="0" max="1000" required value="1" style="width: 60px">
+                                            <b> Disk (Gb) </b><input class="price1" type="number" name="disk" min="0" max="1000" step="5" value="20" style="width: 60px" required>
+                                            <br>
+                                            <br>
+                                            <label><b>Type disk</b></label>
+                                            <br>
+                                            <select class="form-control" name="state" id="type_disk">
+                                                <option value="{{DISK_SSD}}">SSD</option>
+                                                <option value="{{DISK_HDD}}">HDD</option>
+                                            </select>
+                                            
+                                            <div><font id="invalid-msg" color="red" size="5"></font></div>
+                
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-primary" value="OK" id="flavor_submit" >Create</button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal" id="close_modal_flavor">Close</button>
                                         </div>
                                 </div>
                             </div>

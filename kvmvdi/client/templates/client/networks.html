@@ -17,7 +17,7 @@
                 <div class="table-responsive">
                     <table class="display nowrap table table-hover table-striped table-bordered list_net_client" width="100%">
                         <thead>
-                            <tr align="center">
+                            <tr>
                                 <th>Name</th>
                                 <th>Subnets Associated</th>
                                 <th>Shared </th>
@@ -26,7 +26,29 @@
                                 <th>Admin State </th>
                             </tr>
                         </thead>
-                        <tbody align="center">
+                        <tbody>
+                            {% for network in networks %}
+                                <tr>
+                                    <td>{{network.name}}</td>
+                                    <td>{{network.subnets_associated}}</td>
+                                    {% if network.shared == 1 %}
+                                        <td>Yes</td>
+                                    {% else%}
+                                        <td>No</td>
+                                    {% endif%}
+                                    {% if network.external == 1 %}
+                                        <td>Yes</td>
+                                    {% else%}
+                                        <td>No</td>
+                                    {% endif%}
+                                    <td>{{network.status}}</td>
+                                    {% if network.admin_state_up == 1 %}
+                                        <td>UP</td>
+                                    {% else%}
+                                        <td>DOWN</td>
+                                    {% endif%}
+                                </tr>
+                            {% endfor%}
                         </tbody>
                     </table>
                 </div>
@@ -41,5 +63,4 @@
 {% endblock content %}
 {% block js %}
 <script src="{% static 'js/base-js/datatables.min.js' %}"></script>
-<script src="{% static 'js/portal/createinstance.js' %}"></script>
 {% endblock %}

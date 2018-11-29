@@ -172,7 +172,7 @@ $(document).ready(function(){
                     url:location.href,
                     data: {'sshkeyname':sshkeyname, 'csrfmiddlewaretoken':token},
                     success: function(msg){
-                        if (msg == 'Đã có lỗi xảy ra!'){
+                        if ((msg == 'Đã có lỗi xảy ra!') || (msg == 'Tên ssh key đã tồn tại!')){
                             swal({
                                 type: 'error',
                                 title: msg,

@@ -26,8 +26,7 @@ $(document).ready(function(){
         // var flavor = document.getElementById("mySelect").value;
         $('.flavor_select').find('label').children().each(function() {
             if ($(this).is(':checked')){
-                flavor = $(this).val().replace("[", "");
-                flavor = flavor.replace("]", "");
+                flavor = $(this).val();
             }
         });
 
@@ -101,8 +100,7 @@ $(document).ready(function(){
         var flavor;
         $('.flavor_select input[name="image"]').each(function() {
             if ($(this).is(':checked')){
-                flavor = $(this).val().replace("[", "");
-                flavor = flavor.replace("]", "");
+                flavor = $(this).val();
             }
         });
         var ram = flavor.split(',')[0];

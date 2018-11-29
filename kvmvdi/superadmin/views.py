@@ -29,7 +29,8 @@ from .plugin.novaclient import nova
 from .plugin.keystoneclient import keystone
 from .plugin.neutronclient import neutron
 from .plugin.get_tokens import getToken
-from kvmvdi.settings import OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT, OPS_TOKEN_EXPIRED, VNPAY_HASH_SECRET_KEY, VNPAY_TMN_CODE, VNPAY_API_URL, VNPAY_PAYMENT_URL, VNPAY_RETURN_URL
+from kvmvdi.settings import OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT, OPS_TOKEN_EXPIRED, VNPAY_HASH_SECRET_KEY, VNPAY_TMN_CODE, VNPAY_API_URL, VNPAY_PAYMENT_URL, VNPAY_RETURN_URL, \
+        PRICE_RAM, PRICE_VCPUS, PRICE_DISK_HDD ,PRICE_DISK_SSD, DISK_HDD, DISK_SSD
 from django.utils import timezone
 
                 
@@ -165,6 +166,36 @@ def home(request):
     else:
         return HttpResponseRedirect('/')
 
+def flavors(request):
+    user = request.user
+    list_ops = Ops.objects.all()
+    ops = Ops.objects.get(ip=OPS_IP)
+    if user.is_authenticated  and user.is_adminkvm:
+        if request.method == 'POST':
+            if 'ram' in request.POST:
+                if user.token_id is None or user.check_expired() == False:
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                    user.token_id = getToken(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT,
+                                user_domain_id='default', project_domain_id='default')
+                    user.save()
+                connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=OPS_PROJECT,
+                            project_domain_id='default')
+                try:
+                    connect.createFlavor(svname=request.POST['flavorname'], ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=0)
+                    if request.POST['type_disk'] == DISK_HDD:
+                        price = int(request.POST['ram']) * PRICE_RAM + int(request.POST['vcpus']) * PRICE_VCPUS + int(request.POST['disk']) * PRICE_DISK_HDD
+                    else:
+                        price = int(request.POST['ram']) * PRICE_RAM + int(request.POST['vcpus']) * PRICE_VCPUS + int(request.POST['disk']) * PRICE_DISK_SSD
+                    Flavors.objects.create(ops=ops, ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=int(request.POST['disk']), type_disk=request.POST['type_disk'], price=price)
+                except:
+                    pass
+        return render(request, 'kvmvdi/flavors.html',{'username': mark_safe(json.dumps(user.username)),
+                                                        'DISK_SSD': DISK_SSD,
+                                                        'DISK_HDD': DISK_HDD,
+                                                        'flavors': Flavors.objects.filter(ops=ops)
+                                                        })
+    else:
+        return HttpResponseRedirect('/')
 
 def home_data(request, ops_ip):
     user = request.user
@@ -253,7 +284,6 @@ def home_data(request, ops_ip):
                 json_data = json.loads(json.dumps(big_data))
                 return JsonResponse(json_data)
 
-
 def user_login(request):
     user = request.user
     mess_register_ok = 'Hãy kiểm tra email của bạn để hoàn tất đăng ký'
@@ -292,9 +322,9 @@ def user_login(request):
                 username = request.POST['agentname']
                 password = request.POST['agentpass']
                 user = authenticate(username=username, password=password)
-                print(username)
                 if user:
                     if user.is_active and user.is_adminkvm:
+                        print(username)
                         login(request, user)
                         if user.token_id is None or user.check_expired() == False:
                             user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
@@ -358,7 +388,6 @@ def user_login(request):
                     return render(request, 'kvmvdi/login.html',{'error':error})
         return render(request, 'kvmvdi/login.html')
 
-
 def activate(request, uidb64, token):
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
@@ -385,9 +414,25 @@ def activate(request, uidb64, token):
             connect.add_user_to_project(user=user.username, project=user.username)
             connect_user = keystone(ip=OPS_IP, username=user.username, password=user.username, project_name=user.username,
                             user_domain_id='default', project_domain_id='default')
-            
-            
-            connect_user.create_network(user.username)
+            try:
+                net_id = connect_user.create_network(user.username)
+                net = connect_user.show_network(net_id)
+                subnet = connect_user.show_subnet(net['network']['subnets'][0])
+                if net['network']['shared'] == False:
+                    shared = 0
+                else:
+                    shared = 1
+                if net['network']['admin_state_up'] == False:
+                    admin_state_up = 0
+                else:
+                    admin_state_up = 1
+                if net['network']['router:external'] == False:
+                    external = 0
+                else:
+                    external = 1
+                Networks.objects.create(owner=user, name=user.username, subnets_associated=subnet['subnet']['cidr'], shared=shared, external=external, status=net['network']['status'], admin_state_up=admin_state_up)
+            except:
+                pass
         return redirect('/')
     else:
         return HttpResponse('Đường dẫn không hợp lệ!')
@@ -411,11 +456,9 @@ def resetpwd(request, uidb64, token):
     else:
         return HttpResponse('Link is invalid!')
 
-
 def user_logout(request):
     logout(request)
     return HttpResponseRedirect('/')
-
 
 def user_profile(request):
     user = request.user
@@ -423,7 +466,6 @@ def user_profile(request):
         return render(request, 'kvmvdi/profile.html', {'username': mark_safe(json.dumps(user.username))})
     else:
         return HttpResponseRedirect('/')
-
 
 def payment(request):
     user = request.user
@@ -475,7 +517,6 @@ def payment(request):
         else:
             return render(request, "client/payment.html", {"title": "Thanh toán"})
 
-
 def payment_ipn(request):
     user = request.user
     if user.is_authenticated:
@@ -515,7 +556,6 @@ def payment_ipn(request):
             result = JsonResponse({'RspCode': '99', 'Message': 'Invalid request'})
 
         return result
-
 
 def payment_return(request):
     user = request.user
@@ -558,7 +598,6 @@ def payment_return(request):
         else:
             return render(request, "client/payment_return.html", {"title": "Kết quả thanh toán", "result": ""})
 
-
 def query(request):
     if request.method == 'GET':
         return render(request, "client/query.html", {"title": "Kiểm tra kết quả giao dịch"})
@@ -587,10 +626,8 @@ def query(request):
         print('Validate data from VNPAY:' + str(vnp.validate_response(VNPAY_HASH_SECRET_KEY)))
         return render(request, "client/query.html", {"title": "Kiểm tra kết quả giao dịch", "data": vnp.responseData})
 
-
 def refund(request):
     return render(request, "client/refund.html", {"title": "Gửi yêu cầu hoàn tiền"})
-
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')

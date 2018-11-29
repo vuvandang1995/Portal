@@ -6,6 +6,7 @@ app_name = 'superadmin'
 urlpatterns = [
     path('', views.user_login),
     path('home', views.home, name='home'),
+    path('flavors', views.flavors, name='flavors'),
 
     # url(r'register/$',views.register, name='register'),
     # url(r'login/$', views.user_login, name='login'),

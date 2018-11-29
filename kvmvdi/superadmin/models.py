@@ -107,7 +107,11 @@ class Server(models.Model):
 
 class Flavors(models.Model):
     ops = models.ForeignKey('Ops', models.CASCADE, db_column='ops')
-    thong_so = models.CharField(max_length=255)
+    ram = models.IntegerField()
+    vcpus = models.IntegerField()
+    disk = models.IntegerField()
+    type_disk = models.CharField(max_length=255)
+    price = models.CharField(max_length=255)
 
     class Meta:
         managed = True
@@ -129,6 +133,20 @@ class Images(models.Model):
     class Meta:
         managed = True
         db_table = 'images'
+
+class Networks(models.Model):
+    owner = models.ForeignKey('Myuser', models.CASCADE, db_column='owner')
+    name = models.CharField(max_length=255)
+    subnets_associated = models.CharField(max_length=255)
+    shared = models.IntegerField()
+    external = models.IntegerField()
+    status = models.CharField(max_length=100)
+    admin_state_up = models.IntegerField()
+
+
+    class Meta:
+        managed = True
+        db_table = 'client_networks'
 
 class Oders(models.Model):
     service = models.CharField(max_length=255)

@@ -10,33 +10,122 @@
 {% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
-<div class="col-md-10 col-lg-10">
-    <div class="home_content" >
-        <div class="web_content">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="display nowrap table table-hover table-striped table-bordered list_sshkey_client" width="100%">
-                        <thead>
-                            <tr align="center">
-                                <th>Name</th>
-                                <th>Fingerprint</th>
-                                <th>Actions </th>
-                            </tr>
-                        </thead>
-                        <tbody align="center">
-                        </tbody>
-                    </table>
+    <div class="col-md-10 col-lg-10">
+        <div class="home_content" >
+            <div class="web_content">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="display nowrap table table-hover table-striped table-bordered list_sshkey_client" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Actions </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ssh in sshkeys %}
+                                    <tr>
+                                        <td>{{ssh.name}}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-danger delete_sshkey" id="{{ssh.name}}"data-toggle="tooltip" title="xóa">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor%}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
+        
     </div>
-    
-</div>
+
+    <div class="add">
+        <img src="{% static 'images/portal/img/arrow.png' %}" alt="">
+    </div>
+    <div class="add" data-toggle="modal" data-target="#sshkey" data-placement="left" name="_servername" id="sshkey_serverid" type="submit">
+        <i class="fa fa-plus"></i>
+    </div>
 
 
 {% endif %}
 {% endblock content %}
 {% block js %}
 <script src="{% static 'js/base-js/datatables.min.js' %}"></script>
-<script src="{% static 'js/portal/createinstance.js' %}"></script>
+<script>
+    $("#sshkey").on('show.bs.modal', function(event){
+            $("input[name=sshkeyname]").val('');
+        });
+    $("body").on('click', '#sshkey_submit', function(){
+        var token = $("input[name=csrfmiddlewaretoken]").val();
+        var sshkeyname = $("input[name=sshkeyname]").val();
+        swal({
+                    imageUrl: '/static/images/spinner-sample.gif',
+                    imageHeight: 120,
+                    imageAlt: 'wait',
+                    title: "Please wait...",
+                    title: "Please wait...",
+                    showConfirmButton: false
+                });
+        $.ajax({
+            type:'POST',
+            url:location.href,
+            data: {'sshkeyname':sshkeyname, 'csrfmiddlewaretoken':token},
+            success: function(msg){
+                if ((msg == 'Đã có lỗi xảy ra!') || (msg == 'Tên ssh key đã tồn tại!')){
+                    swal({
+                        type: 'error',
+                        title: msg,
+                    });
+                }else{
+                    document.getElementById("close_modal_sshkey").click();
+                    swal.close();
+                    $("body .list_sshkey_client").load(location.href + " .list_sshkey_client");
+                }
+            }
+        });
+    });
+
+    $("body").on('click', '.delete_sshkey', function(){
+        var token = $("input[name=csrfmiddlewaretoken]").val();
+        var sshkeyname = $(this).attr('id');
+        swal({
+                title: 'Are you sure?',
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes!'
+            }).then(function(result){
+                if(result.value){
+                    swal({
+                                imageUrl: '/static/images/spinner-sample.gif',
+                                imageHeight: 120,
+                                imageAlt: 'wait',
+                                title: "Please wait...",
+                                title: "Please wait...",
+                                showConfirmButton: false
+                            });
+                    $.ajax({
+                        type:'POST',
+                        url:location.href,
+                        data: {'delete_sshkey':sshkeyname, 'csrfmiddlewaretoken':token},
+                        success: function(msg){
+                            if ((msg == 'Đã có lỗi xảy ra!') || (msg == 'Tên ssh key không tồn tại!')){
+                                swal({
+                                    type: 'error',
+                                    title: msg,
+                                });
+                            }else{
+                                swal.close();
+                                $("body .list_sshkey_client").load(location.href + " .list_sshkey_client");
+                            }
+                        }
+                    });
+                }
+            });
+    });
+</script>
 {% endblock %}

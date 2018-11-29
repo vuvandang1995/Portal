@@ -90,8 +90,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'kvm_vdi',
-        'USER': 'dangvv',
-        'PASSWORD': '1',
+        'USER': 'portal',
+        'PASSWORD': '123456',
         'HOST': '192.168.100.22',
         'PORT': '3306',
     }
@@ -147,7 +147,7 @@ OPS_IP = '192.168.40.11'
 # OPS_IP = '192.168.40.146'
 OPS_ADMIN = 'admin'
 OPS_PASSWORD = 'Welcome123'
-OPS_PASSWORD = 'admin'
+# OPS_PASSWORD = 'admin'
 OPS_PROJECT = 'admin'
 OPS_TOKEN_EXPIRED = 1500
 
@@ -168,3 +168,8 @@ VNPAY_PAYMENT_URL = 'http://sandbox.vnpayment.vn/paymentv2/vpcpay.html'  # get f
 VNPAY_API_URL = 'http://sandbox.vnpayment.vn/merchant_webapi/merchant.html'
 VNPAY_TMN_CODE = 'INTERCOM'  # Website ID in VNPAY System, get from config
 VNPAY_HASH_SECRET_KEY = 'REWEKUZMPNPFLYPPEEMYABEEDDYMKXFN'  # Secret key for create checksum,get from config
+
+PRICE_RAM = 50000
+PRICE_VCPUS = 60000
+PRICE_DISK_HDD = 3000
+PRICE_DISK_SSD = 5000

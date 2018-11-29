@@ -43,3 +43,10 @@ class keystone(opsutils.Base):
         body_create_subnet = {'subnets': [{'name': network_name, 'cidr': '192.168.0.0/24',
                                             'ip_version': 4, 'network_id': net['network']['id']}]}
         self.neutron.create_subnet(body=body_create_subnet)
+        return net['network']['id']
+    
+    def show_network(self, network_id):
+        return self.neutron.show_network(network_id)
+
+    def show_subnet(self, subnet_id):
+        return self.neutron.show_subnet(subnet_id)

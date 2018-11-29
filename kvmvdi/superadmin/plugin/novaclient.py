@@ -60,6 +60,9 @@ class nova():
     def create_sshkey(self, sshkeyname):
         return self.nova.keypairs.create(name=sshkeyname)
 
+    def delete_sshkey(self, sshkeyname):
+        self.nova.keypairs.delete(key=sshkeyname)
+
     def create_volume(self, name, imageRef, size, volume_type):
         if int(size) > 0:
             return self.cinder.volumes.create(size=size, name=name, imageRef=imageRef, volume_type=volume_type)
