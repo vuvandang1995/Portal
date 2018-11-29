@@ -223,10 +223,11 @@ def instances(request):
                                 user_admin.save()
                         connect_neutron = neutron_(ip=OPS_IP, token_id=user_admin.token_id, project_name=OPS_PROJECT, project_domain_id='default')
                         net = ''
+                        price = 0
                         if request.POST['type_disk'] == DISK_HDD:
-                            price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2])) * PRICE_DISK_HDD *count
+                            price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2]) * PRICE_DISK_HDD) * count
                         elif request.POST['type_disk'] == DISK_SSD:
-                            price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2])) * PRICE_DISK_SSD *count
+                            price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2]) * PRICE_DISK_SSD) * count
                         if price <= float(user.money):
                             try:
                                 try:
@@ -491,7 +492,6 @@ def home_data(request):
             thread = check_ping(host=OPS_IP)
             if thread.run():
                 ops = Ops.objects.get(ip=OPS_IP)
-                print(user.check_expired())
                 if not user.check_expired():
                     user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
                     user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
@@ -505,7 +505,7 @@ def home_data(request):
                 for item in connect.list_server():
                     # print(item.status)
                     # print(dir(item))
-                    print(item.networks)
+                    # print(item.networks)
                     try:
                         name = '''<a href="/client/show_instances/'''+item._info['id']+'''"><p>'''+item._info['name']+'''</p></a>'''
                     except:
@@ -523,12 +523,11 @@ def home_data(request):
 
                     ram = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).ram)+'</p>'
                     vcpus = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).vcpus)+'</p>'
-                    disk = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).disk)+'</p>'
-
-                    
-                    # ram = '<p>'+str(Server.objects.get(name=item._info['name']).ram)+'</p>'
-                    # vcpus = '<p>'+str(Server.objects.get(name=item._info['name']).vcpus)+'</p>'
-                    # disk = '<p>'+str(Server.objects.get(name=item._info['name']).disk)+'</p>'
+                    try:
+                        xx = Server.objects.get(name=item._info['name'], owner=user)
+                        disk = '<p>'+str(xx.disk)+'</p>'
+                    except:
+                        disk = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).disk)+'</p>'
 
                     if item._info['status'] == 'ACTIVE':
                         status = '<span class="label label-success">'+item._info['status']+'</span>'

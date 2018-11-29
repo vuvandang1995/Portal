@@ -180,15 +180,13 @@ def flavors(request):
                     user.save()
                 connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=OPS_PROJECT,
                             project_domain_id='default')
-                try:
-                    connect.createFlavor(svname=request.POST['flavorname'], ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=0)
-                    if request.POST['type_disk'] == DISK_HDD:
-                        price = int(request.POST['ram']) * PRICE_RAM + int(request.POST['vcpus']) * PRICE_VCPUS + int(request.POST['disk']) * PRICE_DISK_HDD
-                    else:
-                        price = int(request.POST['ram']) * PRICE_RAM + int(request.POST['vcpus']) * PRICE_VCPUS + int(request.POST['disk']) * PRICE_DISK_SSD
-                    Flavors.objects.create(ops=ops, ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=int(request.POST['disk']), type_disk=request.POST['type_disk'], price=price)
-                except:
-                    pass
+                print(request.POST)
+                connect.createFlavor(svname=request.POST['flavorname'], ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=0)
+                if request.POST['type_disk'] == DISK_HDD:
+                    price = int(request.POST['ram']) * PRICE_RAM + int(request.POST['vcpus']) * PRICE_VCPUS + int(request.POST['disk']) * PRICE_DISK_HDD
+                else:
+                    price = int(request.POST['ram']) * PRICE_RAM + int(request.POST['vcpus']) * PRICE_VCPUS + int(request.POST['disk']) * PRICE_DISK_SSD
+                Flavors.objects.create(ops=ops, ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=int(request.POST['disk']), type_disk=request.POST['type_disk'], price=price)
         return render(request, 'kvmvdi/flavors.html',{'username': mark_safe(json.dumps(user.username)),
                                                         'DISK_SSD': DISK_SSD,
                                                         'DISK_HDD': DISK_HDD,

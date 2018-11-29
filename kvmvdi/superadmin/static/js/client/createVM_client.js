@@ -107,19 +107,51 @@ $(document).ready(function(){
         var vcpus = flavor.split(',')[1];
         var disk = flavor.split(',')[2];
         var count = $("body input[name=count]").val();
-        var price_new = ((parseInt(ram)/1024) * 3 + parseInt(vcpus) * 2 + parseInt(disk) * 1) * parseInt(count) * 10000;
+        var type_disk = document.getElementById("type_disk").value;
+        var price_new;
+        if (type_disk == 'ceph-hdd'){
+            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 3000) * parseInt(count);
+        }else{
+            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 5000) * parseInt(count);
+        }
         $("body input[name=price]").val(price_new);
     });
     
 
     $('body .flavor_').click(function(){
-        var flavor = $(this).prev().val().replace("[", "");
-        flavor = flavor.replace("]", "");
+        var flavor = $(this).prev().val();
         var ram = flavor.split(',')[0];
         var vcpus = flavor.split(',')[1];
         var disk = flavor.split(',')[2];
         var count = $("body input[name=count]").val();
-        var price_new = ((parseInt(ram)/1024) * 3 + parseInt(vcpus) * 2 + parseInt(disk) * 1) * parseInt(count) * 10000;
+        var type_disk = document.getElementById("type_disk").value;
+        var price_new;
+        if (type_disk == 'ceph-hdd'){
+            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 3000) * parseInt(count);
+        }else{
+            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 5000) * parseInt(count);
+        }
+        $("body input[name=price]").val(price_new);
+    });
+
+    $('#type_disk').on('change', function() {
+        var flavor;
+        $('.flavor_select').find('label').children().each(function() {
+            if ($(this).is(':checked')){
+                flavor = $(this).val();
+            }
+        });
+        var ram = flavor.split(',')[0];
+        var vcpus = flavor.split(',')[1];
+        var disk = flavor.split(',')[2];
+        var count = $("body input[name=count]").val();
+        var type_disk = document.getElementById("type_disk").value;
+        var price_new;
+        if (type_disk == 'ceph-hdd'){
+            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 3000) * parseInt(count);
+        }else{
+            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 5000) * parseInt(count);
+        }
         $("body input[name=price]").val(price_new);
     });
 
