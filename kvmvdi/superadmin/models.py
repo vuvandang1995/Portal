@@ -110,8 +110,7 @@ class Flavors(models.Model):
     ram = models.IntegerField()
     vcpus = models.IntegerField()
     disk = models.IntegerField()
-    type_disk = models.CharField(max_length=255)
-    price = models.CharField(max_length=255)
+    i_d = models.CharField(max_length=255)
 
     class Meta:
         managed = True

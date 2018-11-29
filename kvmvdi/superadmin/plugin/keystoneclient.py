@@ -15,9 +15,15 @@ class keystone(opsutils.Base):
 
     def create_project(self, name, domain):
         self.keystone.projects.create(name=name, domain=domain, description=None, enabled=True, parent=None)
+
+    def delete_project(self, name):
+        self.keystone.projects.delete(self.keystone.projects.find(name=name))
     
     def create_user(self, name, domain, project, password, email):
         self.keystone.users.create(name=name, domain=domain, project=project, password=password, email=email, description=None, enabled=True, parent=None)
+
+    def delete_user(self, name):
+        self.keystone.users.delete(self.keystone.users.find(name=name))
 
     def add_user_to_project(self, user, project):
         self.user = self.keystone.users.find(name=user)

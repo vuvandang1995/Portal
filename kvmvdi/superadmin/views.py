@@ -180,17 +180,47 @@ def flavors(request):
                     user.save()
                 connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=OPS_PROJECT,
                             project_domain_id='default')
-                print(request.POST)
-                connect.createFlavor(svname=request.POST['flavorname'], ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=0)
-                if request.POST['type_disk'] == DISK_HDD:
-                    price = int(request.POST['ram']) * PRICE_RAM + int(request.POST['vcpus']) * PRICE_VCPUS + int(request.POST['disk']) * PRICE_DISK_HDD
-                else:
-                    price = int(request.POST['ram']) * PRICE_RAM + int(request.POST['vcpus']) * PRICE_VCPUS + int(request.POST['disk']) * PRICE_DISK_SSD
-                Flavors.objects.create(ops=ops, ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=int(request.POST['disk']), type_disk=request.POST['type_disk'], price=price)
+                flavor = connect.createFlavor(svname=request.POST['flavorname'], ram=int(request.POST['ram'])*1024, vcpus=int(request.POST['vcpus']), disk=0)
+                Flavors.objects.create(ops=ops, i_d=flavor.id ,ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=int(request.POST['disk']))
+            elif 'flavorid' in request.POST:
+                if user.token_id is None or user.check_expired() == False:
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                    user.token_id = getToken(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT,
+                                user_domain_id='default', project_domain_id='default')
+                    user.save()
+                connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=OPS_PROJECT,
+                            project_domain_id='default')
+                try:
+                    fl = Flavors.objects.get(id=request.POST['flavorid'])
+                    connect.deleteFlavor(i_d=fl.i_d)
+                    fl.delete()
+                except:
+                    return HttpResponse('Xảy ra lỗi! Vui lòng thử lại sau!')
         return render(request, 'kvmvdi/flavors.html',{'username': mark_safe(json.dumps(user.username)),
                                                         'DISK_SSD': DISK_SSD,
                                                         'DISK_HDD': DISK_HDD,
                                                         'flavors': Flavors.objects.filter(ops=ops)
+                                                        })
+    else:
+        return HttpResponseRedirect('/')
+
+def users(request):
+    user = request.user
+    list_ops = Ops.objects.all()
+    ops = Ops.objects.get(ip=OPS_IP)
+    if user.is_authenticated  and user.is_adminkvm:
+        if 'userid' in request.POST:
+                try:
+                    connect = keystone(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT,
+                            user_domain_id='default', project_domain_id='default')
+                    u = MyUser.objects.get(id=request.POST['userid'])
+                    connect.delete_user(name=u.username)
+                    connect.delete_project(name=u.username)
+                    u.delete()
+                except:
+                    return HttpResponse('Xảy ra lỗi! Vui lòng thử lại sau!')
+        return render(request, 'kvmvdi/user.html',{'username': mark_safe(json.dumps(user.username)),
+                                                        'users': MyUser.objects.filter(is_adminkvm=0)
                                                         })
     else:
         return HttpResponseRedirect('/')

@@ -16,14 +16,12 @@
                     </div>
                     {% csrf_token %}
                     <div class="card-body">
-                        <table id="list_flavors" class="display nowrap table table-hover table-striped table-bordered" cellspacing="0" width="100%">
+                        <table id="list_flavors" class="display nowrap table table-hover table-striped table-bordered list_flavor_client" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
-                                    <th>Ram</th>
+                                    <th>Ram (GB)</th>
                                     <th>VCPUs</th>
                                     <th>Disk</th>
-                                    <th>Type</th>
-                                    <th>Price</th>
                                     <th>Actives</th>
                                 </tr>
                             </thead>
@@ -33,9 +31,11 @@
                                     <td>{{fl.ram}}</td>
                                     <td>{{fl.vcpus}}</td>
                                     <td>{{fl.disk}}</td>
-                                    <td>{{fl.type_disk}}</td>
-                                    <td>{{fl.price}}</td>
-                                    <td></td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger delete_flavor" id="{{fl.id}}"data-toggle="tooltip" title="xóa">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             {% endfor%}
                         </tbody>
@@ -50,5 +50,6 @@
 </div>
 
 <script src="{% static 'js/base-js/datatables.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@7.28.11/dist/sweetalert2.all.min.js"></script>
 <script src="{% static 'js/superadmin/flavors.js' %}"></script>
 {% endblock%}

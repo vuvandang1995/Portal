@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.user_login),
     path('home', views.home, name='home'),
     path('flavors', views.flavors, name='flavors'),
+    path('users', views.users, name='users'),
 
     # url(r'register/$',views.register, name='register'),
     # url(r'login/$', views.user_login, name='login'),
