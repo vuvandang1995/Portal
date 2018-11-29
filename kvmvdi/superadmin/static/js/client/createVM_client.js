@@ -7,7 +7,7 @@ $(document).ready(function(){
         // var image = document.getElementById("mySelect_image").value;
         var type_disk = document.getElementById("type_disk").value;
         var private_network;
-        if ($('#private_network').checked == true){
+        if ($('#private_network input:checkbox').is(":checked")){
             private_network = 1;
         }else{
             private_network = 0;

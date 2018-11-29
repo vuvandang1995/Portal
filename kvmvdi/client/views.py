@@ -178,6 +178,8 @@ def instances(request):
                     image = request.POST['image']
                     flavor = request.POST['flavor']
                     private_network = request.POST['private_network']
+                    if private_network == '1':
+                        private_network = user.username
                     if request.POST['rootpass'] != '':
                         rootpass = "#cloud-config\npassword: "+request.POST['rootpass']+"\nssh_pwauth: True\nchpasswd:\n expire: false"
                     else:
@@ -273,9 +275,24 @@ def instances(request):
                                         else:
                                             time.sleep(2)
                                     mail_subject = 'Thông tin server của bạn là: '
+                                    if private_network == '0':
+                                        IP_Private = 'Khong co'
+                                    else:
+                                        IP_Private = connect.get_server(serverVM.id).networks[user.username][0]
+                                    if request.POST['rootpass'] == '':
+                                        rootpassword = '123456'
+                                    else:
+                                        rootpassword = request.POST['rootpass']
+                                    if sshkey == None:
+                                        ssh_key = 'Khong co'
+                                    else:
+                                        ssh_key = sshkey
                                     message = render_to_string('client/send_info_server.html', {
                                         'user': user,
-                                        'IP': connect.get_server(serverVM.id).networks[network]
+                                        'IP_Public': connect.get_server(serverVM.id).networks[network][0],
+                                        'IP_Private': IP_Private,
+                                        'Key_pair': ssh_key,
+                                        'Login': 'root/'+rootpassword
                                     })
                                     to_email = user.email
                                     email = EmailMessage(
@@ -488,13 +505,19 @@ def home_data(request):
                 for item in connect.list_server():
                     # print(item.status)
                     # print(dir(item))
+                    print(item.networks)
                     try:
                         name = '''<a href="/client/show_instances/'''+item._info['id']+'''"><p>'''+item._info['name']+'''</p></a>'''
                     except:
                         name = '<p></p>'
 
                     try:
-                        ip = '<p>'+next(iter(item.networks.values()))[0]+'</p>'
+                        ip = '<p>'
+                        for key, value in item.networks.items():
+                            ip += key + '<br>'
+                            for i_p in value:
+                                ip += i_p + '<br>'
+                        ip += '</p>'
                     except:
                         ip = '<p></p>'
 
