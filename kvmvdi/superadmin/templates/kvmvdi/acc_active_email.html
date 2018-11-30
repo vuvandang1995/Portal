@@ -1,5 +1,5 @@
 {% autoescape off %}
 Xin chào {{ user.username }},
 Click vào đường dẫn bên dưới để kích hoạt tài khoản của bạn,
-http://{{ domain }}{% url 'superadmin:activate' uidb64=uid token=token %}
+https://{{ domain }}{% url 'superadmin:activate' uidb64=uid token=token %}
 {% endautoescape %}

@@ -161,4 +161,13 @@ $(document).ready(function(){
         }, 1000);
     });
 
+    $(".seepass").on('click',function(){ 
+        var x = document.getElementById("password");
+        if (x.type === "password") {
+            x.type = "text";
+        } else {
+            x.type = "password";
+        }
+    });
+
 });
