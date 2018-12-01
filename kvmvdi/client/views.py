@@ -11,7 +11,7 @@ import threading
 
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from superadmin.models import *
+from superadmin.models import MyUser, Oders, Server, Sshkeys, Flavors, Images, Ops
 import os
 
 from superadmin.plugin.novaclient import nova
@@ -23,6 +23,18 @@ from kvmvdi.settings import OPS_IP, list_net_provider, DISK_HDD, DISK_SSD, \
     OPS_TOKEN_EXPIRED, OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT, PRICE_RAM, PRICE_VCPUS, PRICE_DISK_HDD ,PRICE_DISK_SSD, DISK_HDD, DISK_SSD
 import time
 
+# import django_rq
+# queue = django_rq.get_queue()
+# redis_conn = django_rq.get_connection()
+# worker = django_rq.get_worker()
+# worker.
+# worker = django_rq.get_worker('low', 'high')
+
+from rq import Queue
+from redis import Redis
+
+redis_conn = Redis()
+q = Queue(connection=redis_conn)
                 
 class EmailThread(threading.Thread):
     def __init__(self, email):
@@ -51,6 +63,115 @@ class check_ping(threading.Thread):
             return True
         else:
             return False
+
+def createServer(type_disk, flavor, image, svname, private_network, rootpass, sshkey, count, user):
+    user_admin = MyUser.objects.get(username='admin')
+    if user_admin.is_active and user_admin.is_adminkvm:
+        if user_admin.token_id is None or user_admin.check_expired() == False:
+            user_admin.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+            user_admin.token_id = getToken(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT, user_domain_id='default', project_domain_id='default')
+            user_admin.save()
+    connect_neutron = neutron_(ip=OPS_IP, token_id=user_admin.token_id, project_name=OPS_PROJECT, project_domain_id='default')
+    ops = Ops.objects.get(ip=OPS_IP)
+    if not user.check_expired():
+        user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+        user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
+                                    project_name=user.username, user_domain_id='default',
+                                    project_domain_id='default')
+        user.save()
+    connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
+                    project_domain_id='default')
+    net = ''
+    price = 0
+    if type_disk == DISK_HDD:
+        price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2]) * PRICE_DISK_HDD) * count
+    elif type_disk == DISK_SSD:
+        price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2]) * PRICE_DISK_SSD) * count
+    if price <= float(user.money):
+        fl = connect.find_flavor(id=flavor.split(',')[3])
+        try:
+            try:
+                fl = connect.find_flavor(id=flavor.split(',')[3])
+            except:
+                return HttpResponse("Xay ra loi khi check flavor!")
+            try:
+                im = connect.find_image(image)
+            except:
+                return HttpResponse("Xay ra loi khi check image!")
+            for network in list_net_provider:
+                try:
+                    ip_net = connect.find_network(network)
+                except:
+                    return HttpResponse("Xay ra loi khi check network!")
+                if connect_neutron.free_ips(ip_net=ip_net) > 2:
+                    net = ip_net
+                    break
+            if net == '':
+                return HttpResponse("No IP availability!")
+            try:
+                volume = connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=type_disk)
+            except:
+                return HttpResponse("Xay ra loi khi tao volume!")
+            if volume:
+                check = False
+                while check == False:
+                    if connect.check_volume(id=volume.id).status == 'available':
+                        check = True
+                        volume_id = volume.id
+            else:
+                return HttpResponse("Xay ra loi khi tao volume!")
+            try:
+                serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, userdata=rootpass, key_name=sshkey, admin_pass=rootpass, max_count=count)
+            except:
+                return HttpResponse("Xay ra loi khi tao Server!")
+            if serverVM:
+                user.money = str(float(user.money) - float(price))
+                user.save()
+                Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
+                Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=svname)
+                time.sleep(5)
+                while (1):
+                    if connect.get_server(serverVM.id).status != 'BUILD':
+                        break
+                    else:
+                        time.sleep(2)
+                mail_subject = 'Thông tin server của bạn là: '
+                if private_network == '0':
+                    IP_Private = 'Khong co'
+                else:
+                    IP_Private = connect.get_server(serverVM.id).networks[user.username][0]
+                if request.POST['rootpass'] == '':
+                    rootpassword = '123456'
+                else:
+                    rootpassword = request.POST['rootpass']
+                if sshkey == None:
+                    ssh_key = 'Khong co'
+                else:
+                    ssh_key = sshkey
+                message = render_to_string('client/send_info_server.html', {
+                    'user': user,
+                    'IP_Public': connect.get_server(serverVM.id).networks[network][0],
+                    'IP_Private': IP_Private,
+                    'Key_pair': ssh_key,
+                    'Login': 'root/'+rootpassword
+                })
+                to_email = user.email
+                email = EmailMessage(
+                            mail_subject, message, to=[to_email]
+                )
+                thread = EmailThread(email)
+                thread.start()
+            else:
+                try:
+                    connect.delete_volume(volume=volume_id)
+                except:
+                    pass
+                return HttpResponse("Xay ra loi khi tao Server!")
+        except:
+            return HttpResponse("Xay ra loi khi tao Server!")
+        return serverVM
+    else:
+        return HttpResponse("Vui long nap them tien vao tai khoan!")
 
 def home(request):
     user = request.user
@@ -163,15 +284,6 @@ def instances(request):
         if request.method == 'POST':
             if 'image' in request.POST:
                 if Ops.objects.get(ip=OPS_IP):
-                    ops = Ops.objects.get(ip=OPS_IP)
-                    if not user.check_expired():
-                        user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
-                        user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
-                                                 project_name=user.username, user_domain_id='default',
-                                                 project_domain_id='default')
-                        user.save()
-                    connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
-                                   project_domain_id='default')
                     # print(request.POST)
                     svname = request.POST['svname']
                     # description = request.POST['description']
@@ -188,6 +300,7 @@ def instances(request):
                         sshkey = request.POST['sshkey']
                     except:
                         sshkey = None
+                    type_disk = request.POST['type_disk']
                     # ram = int(float(request.POST['ram']) * 1024)
                     # vcpus = int(request.POST['vcpus'])
                     # disk = int(request.POST['disk'])
@@ -215,102 +328,9 @@ def instances(request):
                             return HttpResponse('Tên server bị trùng!')
                         except:
                             pass
-                        user_admin = MyUser.objects.get(username='admin')
-                        if user_admin.is_active and user_admin.is_adminkvm:
-                            if user_admin.token_id is None or user_admin.check_expired() == False:
-                                user_admin.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
-                                user_admin.token_id = getToken(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT, user_domain_id='default', project_domain_id='default')
-                                user_admin.save()
-                        connect_neutron = neutron_(ip=OPS_IP, token_id=user_admin.token_id, project_name=OPS_PROJECT, project_domain_id='default')
-                        net = ''
-                        price = 0
-                        if request.POST['type_disk'] == DISK_HDD:
-                            price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2]) * PRICE_DISK_HDD) * count
-                        elif request.POST['type_disk'] == DISK_SSD:
-                            price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2]) * PRICE_DISK_SSD) * count
-                        if price <= float(user.money):
-                            try:
-                                try:
-                                    fl = connect.find_flavor(id=flavor.split(',')[3])
-                                except:
-                                    return HttpResponse("Xay ra loi khi check flavor!")
-                                try:
-                                    im = connect.find_image(image)
-                                except:
-                                    return HttpResponse("Xay ra loi khi check image!")
-                                for network in list_net_provider:
-                                    try:
-                                        ip_net = connect.find_network(network)
-                                    except:
-                                        return HttpResponse("Xay ra loi khi check network!")
-                                    if connect_neutron.free_ips(ip_net=ip_net) > 2:
-                                        net = ip_net
-                                        break
-                                if net == '':
-                                    return HttpResponse("No IP availability!")
-                                try:
-                                    volume = connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=request.POST['type_disk'])
-                                except:
-                                    return HttpResponse("Xay ra loi khi tao volume!")
-                                if volume:
-                                    check = False
-                                    while check == False:
-                                        if connect.check_volume(id=volume.id).status == 'available':
-                                            check = True
-                                            volume_id = volume.id
-                                else:
-                                    return HttpResponse("Xay ra loi khi tao volume!")
-                                try:
-                                    serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, userdata=rootpass, key_name=sshkey, admin_pass=rootpass, max_count=count)
-                                except:
-                                    return HttpResponse("Xay ra loi khi tao Server!")
-                                if serverVM:
-                                    user.money = str(float(user.money) - float(price))
-                                    user.save()
-                                    Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
-                                    Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=svname)
-                                    time.sleep(5)
-                                    while (1):
-                                        if connect.get_server(serverVM.id).status != 'BUILD':
-                                            break
-                                        else:
-                                            time.sleep(2)
-                                    mail_subject = 'Thông tin server của bạn là: '
-                                    if private_network == '0':
-                                        IP_Private = 'Khong co'
-                                    else:
-                                        IP_Private = connect.get_server(serverVM.id).networks[user.username][0]
-                                    if request.POST['rootpass'] == '':
-                                        rootpassword = '123456'
-                                    else:
-                                        rootpassword = request.POST['rootpass']
-                                    if sshkey == None:
-                                        ssh_key = 'Khong co'
-                                    else:
-                                        ssh_key = sshkey
-                                    message = render_to_string('client/send_info_server.html', {
-                                        'user': user,
-                                        'IP_Public': connect.get_server(serverVM.id).networks[network][0],
-                                        'IP_Private': IP_Private,
-                                        'Key_pair': ssh_key,
-                                        'Login': 'root/'+rootpassword
-                                    })
-                                    to_email = user.email
-                                    email = EmailMessage(
-                                                mail_subject, message, to=[to_email]
-                                    )
-                                    thread = EmailThread(email)
-                                    thread.start()
-                                else:
-                                    try:
-                                        connect.delete_volume(volume=volume_id)
-                                    except:
-                                        pass
-                                    return HttpResponse("Xay ra loi khi tao Server!")
-                            except:
-                                return HttpResponse("Xay ra loi khi tao Server!")
-                        else:
-                            return HttpResponse("Vui long nap them tien vao tai khoan!")
+                        x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, rootpass, sshkey, count, user)
+                        # x = queue.enqueue(createServer, type_disk=type_disk, flavor=flavor, image=image, svname=svname, private_network=private_network, rootpass=rootpass, sshkey=sshkey, count=count, user=user)
+                        print(x.result)
                 else:
                     return HttpResponseRedirect('/')
             elif 'delete' in request.POST:
@@ -520,97 +540,107 @@ def home_data(request):
                         ip += '</p>'
                     except:
                         ip = '<p></p>'
-
-                    ram = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).ram)+'</p>'
-                    vcpus = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).vcpus)+'</p>'
+                    try:
+                        ram = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).ram)+'</p>'
+                    except:
+                        ram = '<p></p>'
+                    try:
+                        vcpus = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).vcpus)+'</p>'
+                    except:
+                        vcpus = '<p></p>'
                     try:
                         xx = Server.objects.get(name=item._info['name'], owner=user)
                         disk = '<p>'+str(xx.disk)+'</p>'
                     except:
                         disk = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).disk)+'</p>'
+                    try:
+                        if item._info['status'] == 'ACTIVE':
+                            status = '<span class="label label-success">'+item._info['status']+'</span>'
+                            try:
+                                actions = '''
+                                <div>
+                                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                                    Actions <span class="caret"></span></button>
+                                    <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul" style="position: relative !important;">
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                        </li>
+                                        <li>
+                                            <a data-batch-action="true" data-toggle="modal" data-target="#backup" class="data-table-action control" name="'''+item._info['name']+'''" id="backup_'''+item._info['id']+'''" type="submit" data-backdrop="false">Backup</a>
+                                        </li>
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action console" data-title="console" id="'''+item.get_console_url("novnc")["console"]["url"]+'''" type="submit"> Console Instance</a>
+                                        </li>
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="reboot_'''+item._info['id']+'''" type="submit"> Reboot Instance</a>
+                                        </li>
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="stop_'''+item._info['id']+'''" type="submit"> Stop Instance</a>
+                                        </li>
 
-                    if item._info['status'] == 'ACTIVE':
-                        status = '<span class="label label-success">'+item._info['status']+'</span>'
-                        try:
+                                    </ul>
+                                <div>
+                                '''
+                            except:
+                                actions = '''
+                                <div>
+                                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                                    Actions <span class="caret"></span></button>
+                                    <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul" style="position: relative !important;">
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                        </li>
+                                        <li>
+                                            <a data-batch-action="true" data-toggle="modal" data-target="#backup" class="data-table-action control" name="'''+item._info['name']+'''" id="backup_'''+item._info['id']+'''" type="submit" data-backdrop="false">Backup</a>
+                                        </li>
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="reboot_'''+item._info['id']+'''" type="submit"> Reboot Instance</a>
+                                        </li>
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="stop_'''+item._info['id']+'''" type="submit"> Stop Instance</a>
+                                        </li>
+                                    </ul>
+                                <div>
+                                '''
+                        elif item._info['status'] == 'SHUTOFF':
+                            status = '<span class="label label-danger">'+item._info['status']+'</span>'
                             actions = '''
-                            <div>
-                                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                                Actions <span class="caret"></span></button>
-                                <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul" style="position: relative !important;">
-                                    <li>
-                                        <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
-                                    </li>
-                                    <li>
-                                        <a data-batch-action="true" data-toggle="modal" data-target="#backup" class="data-table-action control" name="'''+item._info['name']+'''" id="backup_'''+item._info['id']+'''" type="submit" data-backdrop="false">Backup</a>
-                                    </li>
-                                    <li>
-                                        <a data-batch-action="true" class="data-table-action console" data-title="console" id="'''+item.get_console_url("novnc")["console"]["url"]+'''" type="submit"> Console Instance</a>
-                                    </li>
-                                    <li>
-                                        <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="reboot_'''+item._info['id']+'''" type="submit"> Reboot Instance</a>
-                                    </li>
-                                    <li>
-                                        <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="stop_'''+item._info['id']+'''" type="submit"> Stop Instance</a>
-                                    </li>
-
-                                </ul>
-                            <div>
-                            '''
-                        except:
+                                <div class='nav-item'>
+                                    <button type="button" class="btn btn-primary dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions <span class="caret"></span></button>
+                                    <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul">
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                        </li>
+                                        <li>
+                                            <a data-batch-action="true" data-toggle="modal" data-target="#snapshot" class="data-table-action control" name="'''+item._info['name']+'''" id="snapshot_'''+item._info['id']+'''" type="submit" data-backdrop="false"> Create Snapshot</a>
+                                        </li>
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="start_'''+item._info['id']+'''" type="submit"> Start Instance</a>
+                                        </li>
+                                    </ul>
+                                <div>
+                                '''
+                        else:
+                            status = '<span class="label label-danger">'+item._info['status']+'</span>'
                             actions = '''
-                            <div>
-                                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                                Actions <span class="caret"></span></button>
-                                <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul" style="position: relative !important;">
-                                    <li>
-                                        <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
-                                    </li>
-                                    <li>
-                                        <a data-batch-action="true" data-toggle="modal" data-target="#backup" class="data-table-action control" name="'''+item._info['name']+'''" id="backup_'''+item._info['id']+'''" type="submit" data-backdrop="false">Backup</a>
-                                    </li>
-                                    <li>
-                                        <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="reboot_'''+item._info['id']+'''" type="submit"> Reboot Instance</a>
-                                    </li>
-                                    <li>
-                                        <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="stop_'''+item._info['id']+'''" type="submit"> Stop Instance</a>
-                                    </li>
-                                </ul>
-                            <div>
-                            '''
-                    elif item._info['status'] == 'SHUTOFF':
-                        status = '<span class="label label-danger">'+item._info['status']+'</span>'
-                        actions = '''
-                            <div class='nav-item'>
-                                <button type="button" class="btn btn-primary dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Actions <span class="caret"></span></button>
-                                <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul">
-                                    <li>
-                                        <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
-                                    </li>
-                                    <li>
-                                        <a data-batch-action="true" data-toggle="modal" data-target="#snapshot" class="data-table-action control" name="'''+item._info['name']+'''" id="snapshot_'''+item._info['id']+'''" type="submit" data-backdrop="false"> Create Snapshot</a>
-                                    </li>
-                                    <li>
-                                        <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="start_'''+item._info['id']+'''" type="submit"> Start Instance</a>
-                                    </li>
-                                </ul>
-                            <div>
-                            '''
-                    else:
-                        status = '<span class="label label-danger">'+item._info['status']+'</span>'
-                        actions = '''
-                            <div class='nav-item'>
-                                <button type="button" class="btn btn-primary dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Actions <span class="caret"></span></button>
-                                <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul">
-                                    <li>
-                                        <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
-                                    </li>
-                                </ul>
-                            <div>
-                            '''
-                            
-                    created = '<p>'+item._info['created']+'</p>'
+                                <div class='nav-item'>
+                                    <button type="button" class="btn btn-primary dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions <span class="caret"></span></button>
+                                    <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul">
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                        </li>
+                                    </ul>
+                                <div>
+                                '''
+                    except:
+                        status = '<span class="label label-danger"></span>'
+                        actions = ''
+                    try:
+                        created = '<p>'+item._info['created']+'</p>'
+                    except:
+                        created = '<p></p>'
                     
                     # data.append([host, name, image_name, ip, network, flavor, status, created, actions])
                     data.append([name, ip, ram, vcpus, disk, status, created, actions])

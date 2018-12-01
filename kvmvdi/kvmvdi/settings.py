@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'channels',
     'superadmin',
     'client',
+    'django_rq',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -82,6 +83,32 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# rq
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+    },
+    'with-sentinel': {
+       'SENTINELS': [('localhost', 26736), ('localhost', 26737)],
+       'MASTER_NAME': 'redismaster',
+       'DB': 0,
+       'PASSWORD': 'secret',
+       'SOCKET_TIMEOUT': None,
+    },
+    'high': {
+        'URL': os.getenv('REDISTOGO_URL', 'redis://localhost:6379/0'), # If you're on Heroku
+        'DEFAULT_TIMEOUT': 500,
+    },
+    'low': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+    }
+}
+
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
