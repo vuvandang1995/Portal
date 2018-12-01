@@ -10,3 +10,5 @@ python-keystoneclient
 python-cinderclient
 django-cryptography
 cryptography
+django-rq
+rq
