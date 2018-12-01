@@ -64,7 +64,7 @@ class check_ping(threading.Thread):
         else:
             return False
 
-def createServer(type_disk, flavor, image, svname, private_network, rootpass, sshkey, count, user):
+def createServer(type_disk, flavor, image, svname, private_network, cloudinit, sshkey, count, user, root_pass, price):
     user_admin = MyUser.objects.get(username='admin')
     if user_admin.is_active and user_admin.is_adminkvm:
         if user_admin.token_id is None or user_admin.check_expired() == False:
@@ -82,96 +82,87 @@ def createServer(type_disk, flavor, image, svname, private_network, rootpass, ss
     connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
                     project_domain_id='default')
     net = ''
-    price = 0
-    if type_disk == DISK_HDD:
-        price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2]) * PRICE_DISK_HDD) * count
-    elif type_disk == DISK_SSD:
-        price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2]) * PRICE_DISK_SSD) * count
-    if price <= float(user.money):
+    try:
         fl = connect.find_flavor(id=flavor.split(',')[3])
+    except:
+        return "Xay ra loi khi check flavor!"
+    try:
+        im = connect.find_image(image)
+    except:
+        return "Xay ra loi khi check image!"
+    for network in list_net_provider:
         try:
-            try:
-                fl = connect.find_flavor(id=flavor.split(',')[3])
-            except:
-                return HttpResponse("Xay ra loi khi check flavor!")
-            try:
-                im = connect.find_image(image)
-            except:
-                return HttpResponse("Xay ra loi khi check image!")
-            for network in list_net_provider:
-                try:
-                    ip_net = connect.find_network(network)
-                except:
-                    return HttpResponse("Xay ra loi khi check network!")
-                if connect_neutron.free_ips(ip_net=ip_net) > 2:
-                    net = ip_net
-                    break
-            if net == '':
-                return HttpResponse("No IP availability!")
-            try:
-                volume = connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=type_disk)
-            except:
-                return HttpResponse("Xay ra loi khi tao volume!")
-            if volume:
-                check = False
-                while check == False:
-                    if connect.check_volume(id=volume.id).status == 'available':
-                        check = True
-                        volume_id = volume.id
-            else:
-                return HttpResponse("Xay ra loi khi tao volume!")
-            try:
-                serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, userdata=rootpass, key_name=sshkey, admin_pass=rootpass, max_count=count)
-            except:
-                return HttpResponse("Xay ra loi khi tao Server!")
-            if serverVM:
-                user.money = str(float(user.money) - float(price))
-                user.save()
-                Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
-                Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=svname)
-                time.sleep(5)
-                while (1):
-                    if connect.get_server(serverVM.id).status != 'BUILD':
-                        break
-                    else:
-                        time.sleep(2)
-                mail_subject = 'Thông tin server của bạn là: '
-                if private_network == '0':
-                    IP_Private = 'Khong co'
-                else:
-                    IP_Private = connect.get_server(serverVM.id).networks[user.username][0]
-                if request.POST['rootpass'] == '':
-                    rootpassword = '123456'
-                else:
-                    rootpassword = request.POST['rootpass']
-                if sshkey == None:
-                    ssh_key = 'Khong co'
-                else:
-                    ssh_key = sshkey
-                message = render_to_string('client/send_info_server.html', {
-                    'user': user,
-                    'IP_Public': connect.get_server(serverVM.id).networks[network][0],
-                    'IP_Private': IP_Private,
-                    'Key_pair': ssh_key,
-                    'Login': 'root/'+rootpassword
-                })
-                to_email = user.email
-                email = EmailMessage(
-                            mail_subject, message, to=[to_email]
-                )
-                thread = EmailThread(email)
-                thread.start()
-            else:
-                try:
-                    connect.delete_volume(volume=volume_id)
-                except:
-                    pass
-                return HttpResponse("Xay ra loi khi tao Server!")
+            ip_net = connect.find_network(network)
         except:
-            return HttpResponse("Xay ra loi khi tao Server!")
-        return serverVM
+            return "Xay ra loi khi check network!"
+        if connect_neutron.free_ips(ip_net=ip_net) > 2:
+            net = ip_net
+            break
+    if net == '':
+        return "No IP availability!"
+    try:
+        volume = connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=type_disk)
+    except:
+        return "Xay ra loi khi tao volume!"
+    if volume:
+        check = False
+        while check == False:
+            if connect.check_volume(id=volume.id).status == 'available':
+                check = True
+                volume_id = volume.id
     else:
-        return HttpResponse("Vui long nap them tien vao tai khoan!")
+        return "Xay ra loi khi tao volume!"
+    try:
+        serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, userdata=cloudinit, key_name=sshkey, admin_pass=root_pass, max_count=count)
+    except:
+        return "Xay ra loi khi create1 Server!"
+    if serverVM:
+        user.money = str(float(user.money) - float(price))
+        user.save()
+        Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
+        Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=svname)
+        time.sleep(5)
+        while (1):
+            if connect.get_server(serverVM.id).status != 'BUILD':
+                break
+            else:
+                time.sleep(2)
+        mail_subject = 'Thông tin server của bạn là: '
+        private_network = ''
+        if private_network == '0':
+            IP_Private = 'Khong co'
+        else:
+            IP_Private = connect.get_server(serverVM.id).networks[user.username][0]
+        
+        rootpassword = '123456'
+        if root_pass != '':
+            rootpassword = root_pass
+
+        ssh_key = ''
+        if sshkey == None:
+            ssh_key = 'Khong co'
+        else:
+            ssh_key = sshkey
+        message = render_to_string('client/send_info_server.html', {
+            'user': user,
+            'IP_Public': connect.get_server(serverVM.id).networks[network][0],
+            'IP_Private': IP_Private,
+            'Key_pair': ssh_key,
+            'Pass_Login': rootpassword
+        })
+        to_email = user.email
+        email = EmailMessage(
+                    mail_subject, message, to=[to_email]
+        )
+        thread = EmailThread(email)
+        thread.start()
+        return IP_Private, ssh_key, rootpassword
+    else:
+        try:
+            connect.delete_volume(volume=volume_id)
+        except:
+            pass
+        return "Xay ra loi khi create2 Server!"
 
 def home(request):
     user = request.user
@@ -292,10 +283,11 @@ def instances(request):
                     private_network = request.POST['private_network']
                     if private_network == '1':
                         private_network = user.username
-                    if request.POST['rootpass'] != '':
-                        rootpass = "#cloud-config\npassword: "+request.POST['rootpass']+"\nssh_pwauth: True\nchpasswd:\n expire: false"
+                    root_pass = request.POST['rootpass']
+                    if root_pass != '':
+                        cloudinit = "#cloud-config\npassword: "+request.POST['rootpass']+"\nssh_pwauth: True\nchpasswd:\n expire: false"
                     else:
-                        rootpass = "#cloud-config\npassword: 123456\nssh_pwauth: True\nchpasswd:\n expire: false"
+                        cloudinit = "#cloud-config\npassword: 123456\nssh_pwauth: True\nchpasswd:\n expire: false"
                     try:
                         sshkey = request.POST['sshkey']
                     except:
@@ -322,15 +314,21 @@ def instances(request):
                     #     connect.createVM(svname=svname, flavor=connect.find_flavor(ram=ram, vcpus=vcpus, disk=disk), image=connect.find_image(image), network_id=connect.find_network(network), max_count=count)
                     if svname == '' or image == '' or flavor == '' or request.POST['type_disk'] == '':
                         return HttpResponse('Xay ra loi khi tao Server!')
-                    else:
-                        try:
-                            Server.objects.get(name=svname)
-                            return HttpResponse('Tên server bị trùng!')
-                        except:
-                            pass
-                        x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, rootpass, sshkey, count, user)
-                        # x = queue.enqueue(createServer, type_disk=type_disk, flavor=flavor, image=image, svname=svname, private_network=private_network, rootpass=rootpass, sshkey=sshkey, count=count, user=user)
-                        print(x.result)
+                    price = 0
+                    if type_disk == DISK_HDD:
+                        price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2]) * PRICE_DISK_HDD) * count
+                    elif type_disk == DISK_SSD:
+                        price = (int(flavor.split(',')[0]) * PRICE_RAM + int(flavor.split(',')[1]) * PRICE_VCPUS + int(flavor.split(',')[2]) * PRICE_DISK_SSD) * count
+                    if price > float(user.money):
+                        return HttpResponse("Vui long nap them tien vao tai khoan!")
+                    try:
+                        Server.objects.get(name=svname)
+                        return HttpResponse('Tên server bị trùng!')
+                    except:
+                        pass
+                    x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, cloudinit, sshkey, count, user, root_pass, price)
+                    # x = queue.enqueue(createServer, type_disk=type_disk, flavor=flavor, image=image, svname=svname, private_network=private_network, rootpass=rootpass, sshkey=sshkey, count=count, user=user)
+                    # print(x.result)
                 else:
                     return HttpResponseRedirect('/')
             elif 'delete' in request.POST:
