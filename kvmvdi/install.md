@@ -58,6 +58,21 @@ ExecStart=/usr/local/bin/gunicorn -c gunicorn_conf.py kvmvdi.wsgi:application --
 [Install]
 WantedBy=multi-user.target
 ```
+#### https config
+```
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/home/interuser/Portal/kvmvdi
+ExecStart=/usr/local/bin/gunicorn -c gunicorn_conf.py --keyfile /etc/ssl/private/intercom.vn.PRIVATE.key --certfile /etc/ssl/certs/intercom.CERT.crt kvmvdi.wsgi:application --reload
+
+[Install]
+WantedBy=multi-user.target                         
+```
 ### daphne
 `sudo vim /etc/systemd/system/daphne.service`
 ```
@@ -75,7 +90,22 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 ```
+#### https
+```
+Unit]
+Description=My Daphne Service
+After=network.target
 
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/interuser/Portal/kvmvdi
+ExecStart=/usr/local/bin/daphne -e ssl:8443:privateKey=/etc/ssl/private/intercom.vn.PRIVATE.key:certKey=/etc/ssl/certs/intercom.CERT.crt kvmvdi.asgi:application
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
 ### nginx
 `sudo vim /etc/nginx/sites-available/default`
 
@@ -99,6 +129,41 @@ server {
                 proxy_set_header Upgrade $http_upgrade;
                 proxy_set_header Connection "upgrade";
         }
+}
+```
+#### https
+```
+server {
+        # SSL configuration
+        listen 443 ssl default_server;
+        listen [::]:443 ssl default_server;
+	server_name portal.intercom.vn;
+        ssl on;
+        include snippets/self-signed.conf;
+        include snippets/ssl-params.conf;
+
+        location = /favicon.ico { access_log off; log_not_found off; }
+	location /static/ {
+                root /home/interuser/Portal/kvmvdi/superadmin;
+        }
+
+        location / {
+                include proxy_params;
+                proxy_pass https://0.0.0.0:8000;
+        }
+
+        location /wss/ {
+                proxy_pass https://0.0.0.0:8443;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+        }
+}
+
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+	return 301 https://$host$request_uri;
 }
 ```
 
