@@ -62,23 +62,29 @@ $(document).ready(function(){
                 data: {'svname': svname, 'type_disk': type_disk, 'private_network': private_network, 'rootpass': rootpass, 'sshkey': sshkey, 'price': price, 'description': description, 'csrfmiddlewaretoken':token, 'image': image, 'flavor': flavor, 'count': count, 'project': project},
                 success: function(msg){
                     if ((msg == "Vui long nap them tien vao tai khoan!") || (msg == "No IP availability!") || (msg == "Xay ra loi khi tao volume!")  || (msg == "Xay ra loi khi tao Server!") || (msg == "Xay ra loi khi check flavor!") || (msg == "Xay ra loi khi check image!") || (msg == "Xay ra loi khi check network!") || (msg == "Tên server bị trùng!")){
+                    // if (msg != ''){
                         swal({
                             type: 'warning',
                             title: msg,
                         });
                     }else{
+                        swal.close();
+                        $("#success").html('Tao server thanh cong!').removeClass("hide").hide().fadeIn()
+                        setTimeout(function(){
+                            $("#success").fadeOut("slow");
+                            opsSocket.send(JSON.stringify({
+                                'message' : msg,
+                            }));
+                        }, 6000);
                         setTimeout(function(){
                             $('.list_vm_client').DataTable().ajax.reload(null,false);
-                            swal.close();
-                        }, 0);
+                        }, 6000);
                     }
                  },
             });
         }
 
     });
-
-
 
     $("#id02").on('show.bs.modal', function(event){
         var button = $(event.relatedTarget);
@@ -94,7 +100,6 @@ $(document).ready(function(){
         //     'message' : ip+'abcxyz'+userName,
         // }));
     });
-
 
     $('body .price').change(function(){
         var flavor;
@@ -116,22 +121,36 @@ $(document).ready(function(){
         }
         $("body input[name=price]").val(price_new);
     });
-    
 
     $('body .flavor_').click(function(){
         var flavor = $(this).prev().val();
         var ram = flavor.split(',')[0];
         var vcpus = flavor.split(',')[1];
         var disk = flavor.split(',')[2];
-        var count = $("body input[name=count]").val();
+        // var count = $("body input[name=count]").val();
         var type_disk = document.getElementById("type_disk").value;
         var price_new;
         if (type_disk == 'ceph-hdd'){
-            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 3000) * parseInt(count);
+            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 3000);
         }else{
-            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 5000) * parseInt(count);
+            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 5000);
         }
         $("body input[name=price]").val(price_new);
+    });
+
+    $('body .hide_image').click(function(){
+        var image = $(this).prev().val();
+        if ((image.includes("wi")) || (image.includes("Wi"))){
+            $('.private_network_hide').hide();
+            $('.sshkey_hide').hide();
+            $('.rootpass_hide').hide();
+            $('.price_step').text('5');
+        }else{
+            $('.private_network_hide').show();
+            $('.sshkey_hide').show();
+            $('.rootpass_hide').show();
+            $('.price_step').text('8');
+        }
     });
 
     $('#type_disk').on('change', function() {
@@ -169,5 +188,4 @@ $(document).ready(function(){
             x.type = "password";
         }
     });
-
 });

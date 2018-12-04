@@ -23,7 +23,7 @@ from kvmvdi.settings import OPS_IP, list_net_provider, DISK_HDD, DISK_SSD, \
     OPS_TOKEN_EXPIRED, OPS_ADMIN, OPS_IP, OPS_PASSWORD, OPS_PROJECT, PRICE_RAM, PRICE_VCPUS, PRICE_DISK_HDD ,PRICE_DISK_SSD, DISK_HDD, DISK_SSD
 import time
 
-# import django_rq
+import django_rq
 # queue = django_rq.get_queue()
 # redis_conn = django_rq.get_connection()
 # worker = django_rq.get_worker()
@@ -35,7 +35,6 @@ from redis import Redis
 
 redis_conn = Redis()
 q = Queue(connection=redis_conn)
-                
 class EmailThread(threading.Thread):
     def __init__(self, email):
         threading.Thread.__init__(self)
@@ -115,54 +114,53 @@ def createServer(type_disk, flavor, image, svname, private_network, cloudinit, s
     try:
         serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, userdata=cloudinit, key_name=sshkey, admin_pass=root_pass, max_count=count)
     except:
-        return "Xay ra loi khi create1 Server!"
-    if serverVM:
-        user.money = str(float(user.money) - float(price))
-        user.save()
-        Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
-        Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=svname)
-        time.sleep(5)
-        while (1):
-            if connect.get_server(serverVM.id).status != 'BUILD':
-                break
-            else:
-                time.sleep(2)
-        mail_subject = 'Thông tin server của bạn là: '
-        private_network = ''
-        if private_network == '0':
-            IP_Private = 'Khong co'
-        else:
-            IP_Private = connect.get_server(serverVM.id).networks[user.username][0]
-        
-        rootpassword = '123456'
-        if root_pass != '':
-            rootpassword = root_pass
-
-        ssh_key = ''
-        if sshkey == None:
-            ssh_key = 'Khong co'
-        else:
-            ssh_key = sshkey
-        message = render_to_string('client/send_info_server.html', {
-            'user': user,
-            'IP_Public': connect.get_server(serverVM.id).networks[network][0],
-            'IP_Private': IP_Private,
-            'Key_pair': ssh_key,
-            'Pass_Login': rootpassword
-        })
-        to_email = user.email
-        email = EmailMessage(
-                    mail_subject, message, to=[to_email]
-        )
-        thread = EmailThread(email)
-        thread.start()
-        return IP_Private, ssh_key, rootpassword
-    else:
         try:
             connect.delete_volume(volume=volume_id)
         except:
             pass
-        return "Xay ra loi khi create2 Server!"
+        return "Xay ra loi khi create Server!"
+    user.money = str(float(user.money) - float(price))
+    user.save()
+    Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
+    Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=svname)
+    time.sleep(5)
+    while (1):
+        if connect.get_server(serverVM.id).status != 'BUILD':
+            break
+        else:
+            time.sleep(2)
+    mail_subject = 'Thông tin server của bạn là: '
+    private_network = ''
+    if private_network == '0':
+        IP_Private = 'Khong co'
+    else:
+        try:
+            IP_Private = connect.get_server(serverVM.id).networks[user.username][0]
+        except:
+            IP_Private = ''
+    
+    rootpassword = '123456'
+    if root_pass != '':
+        rootpassword = root_pass
+
+    ssh_key = ''
+    if sshkey == None:
+        ssh_key = 'Khong co'
+    else:
+        ssh_key = sshkey
+    message = render_to_string('client/send_info_server.html', {
+        'user': user,
+        'IP_Public': connect.get_server(serverVM.id).networks[network][0],
+        'IP_Private': IP_Private,
+        'Key_pair': ssh_key,
+        'Pass_Login': rootpassword
+    })
+    to_email = user.email
+    email = EmailMessage(
+                mail_subject, message, to=[to_email]
+    )
+    email.send()
+    return 'OK!'
 
 def home(request):
     user = request.user
@@ -327,8 +325,8 @@ def instances(request):
                     except:
                         pass
                     x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, cloudinit, sshkey, count, user, root_pass, price)
-                    # x = queue.enqueue(createServer, type_disk=type_disk, flavor=flavor, image=image, svname=svname, private_network=private_network, rootpass=rootpass, sshkey=sshkey, count=count, user=user)
-                    # print(x.result)
+                    # createServer(type_disk=type_disk, flavor=flavor, image=image, svname=svname, private_network=private_network, cloudinit=cloudinit, sshkey=sshkey, count=count, user=user, root_pass=root_pass, price=price)
+                    return HttpResponse(x.id)
                 else:
                     return HttpResponseRedirect('/')
             elif 'delete' in request.POST:
@@ -615,6 +613,19 @@ def home_data(request):
                                         </li>
                                         <li>
                                             <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="start_'''+item._info['id']+'''" type="submit"> Start Instance</a>
+                                        </li>
+                                    </ul>
+                                <div>
+                                '''
+                        elif item._info['status'] == 'BUILD':
+                            status = '<p>BUILD</p><div class="progress"><div class="progress-bar progress-bar-striped progress-bar-animated active" style="width:100%"></div></div>'
+                            actions = '''
+                                <div class='nav-item'>
+                                    <button type="button" class="btn btn-primary dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions <span class="caret"></span></button>
+                                    <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul">
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
                                         </li>
                                     </ul>
                                 <div>

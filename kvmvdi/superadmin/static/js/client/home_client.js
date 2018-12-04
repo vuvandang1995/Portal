@@ -125,7 +125,7 @@ $(document).ready(function(){
                 });
             });
         }else if (action == 'rebuild'){
-            Socket.send(JSON.stringify({
+            opsSocket.send(JSON.stringify({
                 'message' : '10.10.10.99',
             }));
             $("body").on('click', '#rebuild_submit', function(){

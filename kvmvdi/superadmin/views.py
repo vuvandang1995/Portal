@@ -138,7 +138,10 @@ def home(request):
                             pass
                         for im in connect.list_Images():
                             if im.visibility == 'public':
-                                Images.objects.create(ops=ops, name=im.name)
+                                try:
+                                    Images.objects.create(ops=ops, name=im.name, os=im.os_type)
+                                except:
+                                    Images.objects.create(ops=ops, name=im.name, os='other')
         return render(request, 'kvmvdi/index.html',{'username': mark_safe(json.dumps(user.username)),
                                                         'ops': list_ops,
                                                         'OPS_IP': OPS_IP

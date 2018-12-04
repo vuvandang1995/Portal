@@ -12,7 +12,7 @@
 {% if user.is_authenticated %}
 <div class="col-md-10 col-lg-10">
     <div class="home_content" >
-        <div class="web_content">
+        <div class="web_content" style="margin-top: 0px;">
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="display nowrap table table-hover table-striped table-bordered list_vm_client" width="100%">
@@ -160,7 +160,7 @@
                                 {% if "win" in im %}
                                     <label>
                                         <input type="radio" name="image" value="{{im}}">
-                                        <div class='all row'>
+                                        <div class='all row hide_image'>
                                             <div class='col-md-5'>
                                                 <img src="{% static 'images/portal/img/windows.png' %}" alt="" height="62px" width="62px">
                                             </div>
@@ -174,7 +174,7 @@
                                 {% elif "cen" in im%}
                                     <label>
                                         <input type="radio" name="image" value="{{im}}">
-                                        <div class='all row'>
+                                        <div class='all row hide_image'>
                                             <div class='col-md-5'>
                                                 <img src="{% static 'images/portal/img/CentOS_logo.gif' %}" alt="" height="62px" width="62px">
                                             </div>
@@ -188,7 +188,7 @@
                                 {% elif "u" in im%}
                                     <label>
                                         <input type="radio" name="image" value="{{im}}">
-                                        <div class='all row'>
+                                        <div class='all row hide_image'>
                                             <div class='col-md-5'>
                                                 <img src="{% static 'images/portal/img/ubuntu_logo.gif' %}" alt="" height="62px" width="62px">
                                             </div>
@@ -202,7 +202,7 @@
                                 {% else%}
                                     <label>
                                         <input type="radio" name="image" value="{{im}}">
-                                        <div class='all row'>
+                                        <div class='all row hide_image'>
                                             <div class='col-md-5'>
                                                 <img src="{% static 'images/portal/img/CentOS_logo.png' %}" alt="" height="62px" width="62px">
                                             </div>
@@ -265,7 +265,7 @@
                         </select>
                         
                     </div>
-                    <div class="create_block" style="margin-top:10px;">
+                    <div class="create_block private_network_hide" style="margin-top:10px;">
                         <div class="create_block_step">
                             5
                         </div>
@@ -273,7 +273,7 @@
                             <input type="checkbox"> Private network
                         </h3>
                     </div>
-                    <div class="create_block" style="margin-top:10px;">
+                    <div class="create_block sshkey_hide" style="margin-top:10px;">
                         <div class="create_block_step">
                             6
                         </div>
@@ -307,7 +307,7 @@
                             </span>
                         </span>
                     </div>
-                    <div class="create_block" style="margin-top:10px;">
+                    <div class="create_block rootpass_hide" style="margin-top:10px;">
                         <div class="create_block_step">
                             7
                         </div>
@@ -319,7 +319,7 @@
                             <img src="{% static 'images/portal/img/Path69.png' %}" alt="" class="seepass">
                         </span>
                     </div>
-                    <div class="create_block" style="margin-top:10px;">
+                    {% comment %} <div class="create_block" style="margin-top:10px;">
                         <div class="create_block_step">
                             8
                         </div>
@@ -329,10 +329,10 @@
                         <span>
                             <input type="number" class="price rootpass form-control" name="count" min="1" max="50" required value="1">
                         </span>
-                    </div>
+                    </div> {% endcomment %}
                     <div class="create_block" style="margin-top:10px;">
-                        <div class="create_block_step">
-                            9
+                        <div class="create_block_step price_step">
+                            8
                         </div>
                         <h3 style="font-size:19px;">
                             Price:

@@ -128,6 +128,7 @@ class Sshkeys(models.Model):
 class Images(models.Model):
     ops = models.ForeignKey('Ops', models.CASCADE, db_column='ops')
     name = models.CharField(max_length=255)
+    os = models.CharField(max_length=255)
 
     class Meta:
         managed = True
