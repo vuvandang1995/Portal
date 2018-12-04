@@ -178,3 +178,5 @@ systemctl enable gunicorn.service
 systemctl enable daphne.service 
 systemctl enable redis-server.service
 ```
+
+`python3 manage.py rqworker default`
