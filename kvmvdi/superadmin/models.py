@@ -106,6 +106,7 @@ class Server(models.Model):
         db_table = 'serverVM'
 
 class Flavors(models.Model):
+    name = models.CharField(max_length=255)
     ops = models.ForeignKey('Ops', models.CASCADE, db_column='ops')
     ram = models.IntegerField()
     vcpus = models.IntegerField()

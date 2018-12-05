@@ -19,6 +19,7 @@
                         <table id="list_flavors" class="display nowrap table table-hover table-striped table-bordered list_flavor_client" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
+                                    <th>Name</th>
                                     <th>Ram (GB)</th>
                                     <th>VCPUs</th>
                                     <th>Disk</th>
@@ -28,6 +29,7 @@
                             <tbody>
                             {% for fl in flavors %}
                                 <tr>
+                                    <td>{{fl.name}}</td>
                                     <td>{{fl.ram}}</td>
                                     <td>{{fl.vcpus}}</td>
                                     <td>{{fl.disk}}</td>

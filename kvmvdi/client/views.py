@@ -12,7 +12,7 @@ import threading
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from superadmin.models import MyUser, Oders, Server, Sshkeys, Flavors, Images, Ops
-import os
+import binascii, os
 
 from superadmin.plugin.novaclient import nova
 from superadmin.plugin.get_tokens import getToken
@@ -63,7 +63,7 @@ class check_ping(threading.Thread):
         else:
             return False
 
-def createServer(type_disk, flavor, image, svname, private_network, cloudinit, sshkey, count, user, root_pass, price):
+def createServer(type_disk, flavor, image, svname, private_network, count, user, root_pass, price, os, cloudinit=None, sshkey=None):
     user_admin = MyUser.objects.get(username='admin')
     if user_admin.is_active and user_admin.is_adminkvm:
         if user_admin.token_id is None or user_admin.check_expired() == False:
@@ -106,13 +106,20 @@ def createServer(type_disk, flavor, image, svname, private_network, cloudinit, s
     if volume:
         check = False
         while check == False:
-            if connect.check_volume(id=volume.id).status == 'available':
-                check = True
+            if connect.check_volume(id=volume.id).status == 'error':
+                return "Xay ra loi khi tao volume!"
+            elif connect.check_volume(id=volume.id).status == 'available':
                 volume_id = volume.id
+                break
+            else:
+                time.sleep(2)
     else:
         return "Xay ra loi khi tao volume!"
     try:
-        serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, userdata=cloudinit, key_name=sshkey, admin_pass=root_pass, max_count=count)
+        if os is not None:
+            serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, max_count=count)
+        else:
+            serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, max_count=count, userdata=cloudinit, key_name=sshkey,)
     except:
         try:
             connect.delete_volume(volume=volume_id)
@@ -139,8 +146,9 @@ def createServer(type_disk, flavor, image, svname, private_network, cloudinit, s
         except:
             IP_Private = ''
     
-    rootpassword = '123456'
-    if root_pass != '':
+    if os is not None:
+        rootpassword = 'Cloud@intercom'
+    else:
         rootpassword = root_pass
 
     ssh_key = ''
@@ -281,15 +289,19 @@ def instances(request):
                     private_network = request.POST['private_network']
                     if private_network == '1':
                         private_network = user.username
-                    root_pass = request.POST['rootpass']
-                    if root_pass != '':
-                        cloudinit = "#cloud-config\npassword: "+request.POST['rootpass']+"\nssh_pwauth: True\nchpasswd:\n expire: false"
-                    else:
-                        cloudinit = "#cloud-config\npassword: 123456\nssh_pwauth: True\nchpasswd:\n expire: false"
+                    
                     try:
                         sshkey = request.POST['sshkey']
                     except:
                         sshkey = None
+                    
+                    try:
+                        os = request.POST['os']
+                        root_pass = 'Cloud@intercom'
+                    except:
+                        os = None
+                        root_pass = binascii.hexlify(os.urandom(12)).decode("utf-8")
+                        cloudinit = "#cloud-config\npassword: "+root_pass+"\nssh_pwauth: True\nchpasswd:\n expire: false"
                     type_disk = request.POST['type_disk']
                     # ram = int(float(request.POST['ram']) * 1024)
                     # vcpus = int(request.POST['vcpus'])
@@ -324,7 +336,10 @@ def instances(request):
                         return HttpResponse('Tên server bị trùng!')
                     except:
                         pass
-                    x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, cloudinit, sshkey, count, user, root_pass, price)
+                    if os is None:
+                        x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, os, cloudinit, sshkey,)
+                    else:
+                        x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, os, timeout=900)
                     # createServer(type_disk=type_disk, flavor=flavor, image=image, svname=svname, private_network=private_network, cloudinit=cloudinit, sshkey=sshkey, count=count, user=user, root_pass=root_pass, price=price)
                     return HttpResponse(x.id)
                 else:

@@ -2,8 +2,8 @@ $(document).ready(function(){
     $("#i_submit").click(function() {
         var token = $("input[name=csrfmiddlewaretoken]").val();
         var svname = $("input[name=svname]").val();
-        var description = $("input[name=description]").val();
-        var rootpass = $("input[name=rootpass]").val();
+        // var description = $("input[name=description]").val();
+        // var rootpass = $("input[name=rootpass]").val();
         // var image = document.getElementById("mySelect_image").value;
         var type_disk = document.getElementById("type_disk").value;
         var private_network;
@@ -22,7 +22,6 @@ $(document).ready(function(){
         });
         
         
-        var project = $("input[name=project]").val();
         // var flavor = document.getElementById("mySelect").value;
         $('.flavor_select').find('label').children().each(function() {
             if ($(this).is(':checked')){
@@ -42,7 +41,7 @@ $(document).ready(function(){
         // var disk = $("input[name=disk]").val();
         var count = $("input[name=count]").val();
         var price = $("input[name=price]").val();
-        if ((svname == '') || (type_disk == '') || (price == '') || (image == '') || (flavor == '') || (count == '') || (rootpass == '')){
+        if ((svname == '') || (type_disk == '') || (price == '') || (image == '') || (flavor == '') || (count == '')){
             swal({
                 type: 'warning',
                 title: "Vui lòng điền đầy đủ thông tin",
@@ -56,32 +55,61 @@ $(document).ready(function(){
                 showConfirmButton: false
             });
             document.getElementById("close_modal").click();
-            $.ajax({
-                type:'POST',
-                url:location.href,
-                data: {'svname': svname, 'type_disk': type_disk, 'private_network': private_network, 'rootpass': rootpass, 'sshkey': sshkey, 'price': price, 'description': description, 'csrfmiddlewaretoken':token, 'image': image, 'flavor': flavor, 'count': count, 'project': project},
-                success: function(msg){
-                    if ((msg == "Vui long nap them tien vao tai khoan!") || (msg == "No IP availability!") || (msg == "Xay ra loi khi tao volume!")  || (msg == "Xay ra loi khi tao Server!") || (msg == "Xay ra loi khi check flavor!") || (msg == "Xay ra loi khi check image!") || (msg == "Xay ra loi khi check network!") || (msg == "Tên server bị trùng!")){
-                    // if (msg != ''){
-                        swal({
-                            type: 'warning',
-                            title: msg,
-                        });
-                    }else{
-                        swal.close();
-                        $("#success").html('Tao server thanh cong!').removeClass("hide").hide().fadeIn()
-                        setTimeout(function(){
-                            $("#success").fadeOut("slow");
-                            opsSocket.send(JSON.stringify({
-                                'message' : msg,
-                            }));
-                        }, 6000);
-                        setTimeout(function(){
-                            $('.list_vm_client').DataTable().ajax.reload(null,false);
-                        }, 6000);
-                    }
-                 },
-            });
+            if ((image.includes("wi")) || (image.includes("Wi"))){
+                $.ajax({
+                    type:'POST',
+                    url:location.href,
+                    data: {'svname': svname, 'type_disk': type_disk, 'private_network': private_network, 'os': 'win', 'price': price, 'csrfmiddlewaretoken':token, 'image': image, 'flavor': flavor},
+                    success: function(msg){
+                        if ((msg == "Vui long nap them tien vao tai khoan!") || (msg == "No IP availability!") || (msg == "Xay ra loi khi tao volume!")  || (msg == "Xay ra loi khi tao Server!") || (msg == "Xay ra loi khi check flavor!") || (msg == "Xay ra loi khi check image!") || (msg == "Xay ra loi khi check network!") || (msg == "Tên server bị trùng!")){
+                        // if (msg != ''){
+                            swal({
+                                type: 'warning',
+                                title: msg,
+                            });
+                        }else{
+                            swal.close();
+                            $("#success").html('Tao server thanh cong!').removeClass("hide").hide().fadeIn()
+                            setTimeout(function(){
+                                $("#success").fadeOut("slow");
+                                opsSocket.send(JSON.stringify({
+                                    'message' : msg,
+                                }));
+                            }, 6000);
+                            setTimeout(function(){
+                                $('.list_vm_client').DataTable().ajax.reload(null,false);
+                            }, 6000);
+                        }
+                    },
+                });
+            }else{
+                $.ajax({
+                    type:'POST',
+                    url:location.href,
+                    data: {'svname': svname, 'type_disk': type_disk, 'private_network': private_network, 'sshkey': sshkey, 'price': price, 'csrfmiddlewaretoken':token, 'image': image, 'flavor': flavor},
+                    success: function(msg){
+                        if ((msg == "Vui long nap them tien vao tai khoan!") || (msg == "No IP availability!") || (msg == "Xay ra loi khi tao volume!")  || (msg == "Xay ra loi khi tao Server!") || (msg == "Xay ra loi khi check flavor!") || (msg == "Xay ra loi khi check image!") || (msg == "Xay ra loi khi check network!") || (msg == "Tên server bị trùng!")){
+                        // if (msg != ''){
+                            swal({
+                                type: 'warning',
+                                title: msg,
+                            });
+                        }else{
+                            swal.close();
+                            $("#success").html('Tao server thanh cong!').removeClass("hide").hide().fadeIn()
+                            setTimeout(function(){
+                                $("#success").fadeOut("slow");
+                                opsSocket.send(JSON.stringify({
+                                    'message' : msg,
+                                }));
+                            }, 6000);
+                            setTimeout(function(){
+                                $('.list_vm_client').DataTable().ajax.reload(null,false);
+                            }, 6000);
+                        }
+                    },
+                });
+            }
         }
 
     });
@@ -141,15 +169,11 @@ $(document).ready(function(){
     $('body .hide_image').click(function(){
         var image = $(this).prev().val();
         if ((image.includes("wi")) || (image.includes("Wi"))){
-            $('.private_network_hide').hide();
             $('.sshkey_hide').hide();
-            $('.rootpass_hide').hide();
-            $('.price_step').text('5');
+            $('.price_step').text('6');
         }else{
-            $('.private_network_hide').show();
             $('.sshkey_hide').show();
-            $('.rootpass_hide').show();
-            $('.price_step').text('8');
+            $('.price_step').text('7');
         }
     });
 

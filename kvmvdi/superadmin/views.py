@@ -164,7 +164,7 @@ def flavors(request):
                 connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=OPS_PROJECT,
                             project_domain_id='default')
                 flavor = connect.createFlavor(svname=request.POST['flavorname'], ram=int(request.POST['ram'])*1024, vcpus=int(request.POST['vcpus']), disk=0)
-                Flavors.objects.create(ops=ops, i_d=flavor.id ,ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=int(request.POST['disk']))
+                Flavors.objects.create(ops=ops, i_d=flavor.id ,ram=int(request.POST['ram']), vcpus=int(request.POST['vcpus']), disk=int(request.POST['disk']), name=request.POST['flavorname'])
             elif 'flavorid' in request.POST:
                 if user.token_id is None or user.check_expired() == False:
                     user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
