@@ -137,6 +137,7 @@ def home(request):
                         except:
                             pass
                         for im in connect.list_Images():
+                            print(im.name)
                             if im.visibility == 'public':
                                 try:
                                     Images.objects.create(ops=ops, name=im.name, os=im.os_type)

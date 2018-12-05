@@ -24,17 +24,17 @@ from kvmvdi.settings import OPS_IP, list_net_provider, DISK_HDD, DISK_SSD, \
 import time
 
 import django_rq
-# queue = django_rq.get_queue()
+q = django_rq.get_queue('default', default_timeout=900)
 # redis_conn = django_rq.get_connection()
 # worker = django_rq.get_worker()
 # worker.
 # worker = django_rq.get_worker('low', 'high')
 
-from rq import Queue
-from redis import Redis
+# from rq import Queue
+# from redis import Redis
 
-redis_conn = Redis()
-q = Queue(connection=redis_conn)
+# redis_conn = Redis()
+# q = Queue(connection=redis_conn)
 class EmailThread(threading.Thread):
     def __init__(self, email):
         threading.Thread.__init__(self)
@@ -63,7 +63,7 @@ class check_ping(threading.Thread):
         else:
             return False
 
-def createServer(type_disk, flavor, image, svname, private_network, count, user, root_pass, price, os, cloudinit=None, sshkey=None):
+def createServer(type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s, cloudinit=None, sshkey=None):
     user_admin = MyUser.objects.get(username='admin')
     if user_admin.is_active and user_admin.is_adminkvm:
         if user_admin.token_id is None or user_admin.check_expired() == False:
@@ -116,7 +116,7 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
     else:
         return "Xay ra loi khi tao volume!"
     try:
-        if os is not None:
+        if o_s is not None:
             serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, max_count=count)
         else:
             serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, max_count=count, userdata=cloudinit, key_name=sshkey,)
@@ -146,7 +146,7 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
         except:
             IP_Private = ''
     
-    if os is not None:
+    if o_s is not None:
         rootpassword = 'Cloud@intercom'
     else:
         rootpassword = root_pass
@@ -296,10 +296,10 @@ def instances(request):
                         sshkey = None
                     
                     try:
-                        os = request.POST['os']
+                        o_s = request.POST['os']
                         root_pass = 'Cloud@intercom'
                     except:
-                        os = None
+                        o_s = None
                         root_pass = binascii.hexlify(os.urandom(12)).decode("utf-8")
                         cloudinit = "#cloud-config\npassword: "+root_pass+"\nssh_pwauth: True\nchpasswd:\n expire: false"
                     type_disk = request.POST['type_disk']
@@ -336,10 +336,10 @@ def instances(request):
                         return HttpResponse('Tên server bị trùng!')
                     except:
                         pass
-                    if os is None:
-                        x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, os, cloudinit, sshkey,)
+                    if o_s is None:
+                        x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s, cloudinit, sshkey)
                     else:
-                        x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, os, timeout=900)
+                        x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s)
                     # createServer(type_disk=type_disk, flavor=flavor, image=image, svname=svname, private_network=private_network, cloudinit=cloudinit, sshkey=sshkey, count=count, user=user, root_pass=root_pass, price=price)
                     return HttpResponse(x.id)
                 else:
