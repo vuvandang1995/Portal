@@ -42,7 +42,6 @@ class EmailThread(threading.Thread):
 
     def run(self):
         self.email.send()
-        
 
 class check_ping(threading.Thread):
     def __init__(self, host):
@@ -57,7 +56,6 @@ class check_ping(threading.Thread):
             return True
         else:
             return False
-
 
 def home(request):
     user = request.user
@@ -136,13 +134,18 @@ def home(request):
                             Images.objects.all().delete()
                         except:
                             pass
-                        for im in connect.list_Images():
-                            print(im.name)
-                            if im.visibility == 'public':
-                                try:
-                                    Images.objects.create(ops=ops, name=im.name, os=im.os_type)
-                                except:
-                                    Images.objects.create(ops=ops, name=im.name, os='other')
+                        im = connect.list_Images()
+                        while True:
+                            try:
+                                image = im.__next__()
+                                if image['visibility'] == 'public':
+                                    try:
+                                        Images.objects.create(ops=ops, name=image['name'], os=image['os_type'])
+                                    except:
+                                        Images.objects.create(ops=ops, name=image['name'], os='other')
+                            except StopIteration:
+                                break
+                        
         return render(request, 'kvmvdi/index.html',{'username': mark_safe(json.dumps(user.username)),
                                                         'ops': list_ops,
                                                         'OPS_IP': OPS_IP

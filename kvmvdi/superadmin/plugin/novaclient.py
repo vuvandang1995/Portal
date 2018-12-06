@@ -3,6 +3,7 @@ from keystoneauth1.identity import v3
 from keystoneauth1 import session
 from novaclient import client
 from cinderclient import client as client_cinder
+from glanceclient import Client
 from neutronclient.v2_0 import client as client_neutron #dòng này có nghĩa là thay tên cho "client" cần được import vào để tránh trùng với dùng thứ 3
 
 class nova():
@@ -12,6 +13,7 @@ class nova():
         self.nova = client.Client(2, session=self.sess)
         self.cinder = client_cinder.Client(3, session=self.sess)
         self.neutron = client_neutron.Client(session=self.sess)
+        self.glance = Client(2, session=self.sess)
         # self.keystone = client_keystone.Client(session=self.sess)
         try:
             self.services = self.nova.services.list()
@@ -38,7 +40,7 @@ class nova():
         return image_list
     
     def list_Images(self):
-        return self.nova.glance.list()
+        return self.glance.images.list()
 
     def list_flavor(self):
         fl = self.nova.flavors.list()

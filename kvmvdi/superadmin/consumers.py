@@ -40,14 +40,13 @@ class adminConsumer(WebsocketConsumer):
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
-        print(q.fetch_job(message).result)
         while (1):
             if q.fetch_job(message).result != None:
                 async_to_sync(self.channel_layer.group_send)(
                     self.room_group_name,
                     {
                         'type': 'chat_message',
-                        'message': 'createVM_ok',
+                        'message': q.fetch_job(message).result,
                     }
                 )
                 break

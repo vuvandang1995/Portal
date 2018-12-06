@@ -215,10 +215,10 @@ $(document).ready(function(){
                                         title: msg,
                                     });
                                 }else{
-                                    setTimeout(function(){
-                                        $('.list_vm_client').DataTable().ajax.reload(null,false);
-                                        swal.close();
-                                    }, 4000);
+                                    swal.close();
+                                    opsSocket.send(JSON.stringify({
+                                        'message' : msg,
+                                    }));
                                 }
                             }
                         });
@@ -337,6 +337,13 @@ $(document).ready(function(){
             
         }
     });
+    function numberWithCommas(x) {
+        return x.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    var money = $('.money').text().split(' VND')[0];
+    money = numberWithCommas(money);
+    $('.money').children().text(money + ' VND');
 
     $("#mySelect_image").select2({
         templateResult: formatState

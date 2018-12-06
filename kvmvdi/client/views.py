@@ -11,7 +11,7 @@ import threading
 
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from superadmin.models import MyUser, Oders, Server, Sshkeys, Flavors, Images, Ops
+from superadmin.models import MyUser, Oders, Server, Sshkeys, Flavors, Images, Ops, Networks
 import binascii, os
 
 from superadmin.plugin.novaclient import nova
@@ -168,7 +168,25 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
                 mail_subject, message, to=[to_email]
     )
     email.send()
-    return 'OK!'
+    return 'Da tao xong server!'
+
+def deleteServer(svid, svname, user):
+    try:
+        ops = Ops.objects.get(ip=OPS_IP)
+        if not user.check_expired():
+            user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+            user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
+                                        project_name=user.username, user_domain_id='default',
+                                        project_domain_id='default')
+            user.save()
+        connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
+                        project_domain_id='default')
+        connect.delete_vm(svid=svid)
+        server = Server.objects.get(name=svname, owner=user)
+        server.delete()
+    except:
+        return "Đã có lỗi xảy ra!"
+    return 'Da xoa xong'
 
 def home(request):
     user = request.user
@@ -332,7 +350,7 @@ def instances(request):
                     if price > float(user.money):
                         return HttpResponse("Vui long nap them tien vao tai khoan!")
                     try:
-                        Server.objects.get(name=svname)
+                        Server.objects.get(name=svname, owner=user)
                         return HttpResponse('Tên server bị trùng!')
                     except:
                         pass
@@ -345,23 +363,10 @@ def instances(request):
                 else:
                     return HttpResponseRedirect('/')
             elif 'delete' in request.POST:
-                ops = Ops.objects.get(ip=OPS_IP)
-                if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
-                    user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
-                                             project_name=user.username, user_domain_id='default',
-                                             project_domain_id='default')
-                    user.save()
-                connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
-                               project_domain_id='default')
-
                 svid = request.POST['delete']
-                try:
-                    connect.delete_vm(svid=svid)
-                except:
-                    return HttpResponse("Đã có lỗi xảy ra!")
-                server = Server.objects.get(name=request.POST['svname'])
-                server.delete()
+                svname = request.POST['svname']
+                y = q.enqueue(deleteServer, svid, svname, user)
+                return HttpResponse(y.id)
             elif 'start' in request.POST:
                 ops = Ops.objects.get(ip=OPS_IP)
                 if not user.check_expired():

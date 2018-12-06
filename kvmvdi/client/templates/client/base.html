@@ -395,11 +395,19 @@
     opsSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
         var message = data['message'];
-        if (message == 'createVM_ok'){
+        if (message == 'Da xoa xong'){
             setTimeout(function(){
                 $('.list_vm_client').DataTable().ajax.reload(null,false);
-            }, 500);
+            }, 8000);
+        }else{
+            setTimeout(function(){
+                $('.list_vm_client').DataTable().ajax.reload(null,false);
+            }, 1000);
         }
+        $("#success").html(message).removeClass("hide").hide().fadeIn()
+        setTimeout(function(){
+            $("#success").fadeOut("slow");
+        }, 6000);
         /*var network = data['network'];
         var sshkey = data['sshkey'];
         if (message[0] == 'image_list'){

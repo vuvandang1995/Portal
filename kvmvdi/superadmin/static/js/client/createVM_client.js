@@ -171,9 +171,18 @@ $(document).ready(function(){
         if ((image.includes("wi")) || (image.includes("Wi"))){
             $('.sshkey_hide').hide();
             $('.price_step').text('6');
+            $('body .disk_').each(function(){
+                var disk = $(this).text().split(' GB disk')[0];
+                if (parseInt(disk) < 30){
+                    $(this).parent().parent().parent().hide();
+                }
+            });
         }else{
             $('.sshkey_hide').show();
             $('.price_step').text('7');
+            $('body .disk_').each(function(){
+                $(this).parent().parent().parent().show();
+            });
         }
     });
 
@@ -187,13 +196,12 @@ $(document).ready(function(){
         var ram = flavor.split(',')[0];
         var vcpus = flavor.split(',')[1];
         var disk = flavor.split(',')[2];
-        var count = $("body input[name=count]").val();
         var type_disk = document.getElementById("type_disk").value;
         var price_new;
         if (type_disk == 'ceph-hdd'){
-            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 3000) * parseInt(count);
+            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 3000);
         }else{
-            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 5000) * parseInt(count);
+            price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 5000);
         }
         $("body input[name=price]").val(price_new);
     });
