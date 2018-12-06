@@ -24,6 +24,8 @@ cd Portal/kvmvdi
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 sudo pip3 install -r requirements.txt
+sudo pip3 uninstall redis
+sudo pip3 install redis==2.10.6
 python3 manage.py migrate
 ```
 
