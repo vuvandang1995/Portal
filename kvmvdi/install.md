@@ -94,7 +94,7 @@ WantedBy=multi-user.target
 ```
 #### https
 ```
-Unit]
+[Unit]
 Description=My Daphne Service
 After=network.target
 
