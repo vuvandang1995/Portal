@@ -137,7 +137,7 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
         else:
             time.sleep(2)
     mail_subject = 'Thông tin server của bạn là: '
-    private_network = ''
+    IP_Private = ''
     if private_network == '0':
         IP_Private = 'Khong co'
     else:
@@ -484,7 +484,6 @@ def instances(request):
                 mail_subject = 'Thông tin key pair: '+sshkeyname
                 message = render_to_string('client/send_info_key.html', {
                     'user': user,
-                    'private_key': key.private_key,
                     'public_key': key.public_key,
                     'key_name': key.name
                 })
@@ -492,6 +491,8 @@ def instances(request):
                 email = EmailMessage(
                             mail_subject, message, to=[to_email]
                 )
+                email.attach('private.pem', key.private_key)
+                email.attach('private.txt', key.private_key)
                 thread = EmailThread(email)
                 thread.start()
                 Sshkeys.objects.create(ops=ops, name=sshkeyname,owner=user)
@@ -720,7 +721,6 @@ def sshkeys(request):
                 mail_subject = 'Thông tin key pair: '+sshkeyname
                 message = render_to_string('client/send_info_key.html', {
                     'user': user,
-                    'private_key': key.private_key,
                     'public_key': key.public_key,
                     'key_name': key.name
                 })
@@ -728,6 +728,8 @@ def sshkeys(request):
                 email = EmailMessage(
                             mail_subject, message, to=[to_email]
                 )
+                email.attach('private.pem', key.private_key)
+                email.attach('private.txt', key.private_key)
                 thread = EmailThread(email)
                 thread.start()
                 Sshkeys.objects.create(ops=ops, name=sshkeyname,owner=user)
