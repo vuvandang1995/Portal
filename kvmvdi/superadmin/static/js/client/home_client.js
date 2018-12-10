@@ -62,6 +62,7 @@ $(document).ready(function(){
                         }else{
                             document.getElementById("close_modal_snapshot").click();
                             swal.close();
+                            $("body .snapshot_select").load(location.href + " .snapshot_select");
                         }
                     }
                 });

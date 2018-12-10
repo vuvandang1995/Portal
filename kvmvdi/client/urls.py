@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('/instances', views.instances, name='instances'),
     path('/networks', views.networks, name='networks'),
+    path('/snapshots', views.snapshots, name='snapshots'),
     path('/sshkeys', views.sshkeys, name='sshkeys'),
     path('/volumes', views.volumes, name='volumes'),
     path('/show_instances/<str:serverid>', views.show_instances, name='show_instances'),

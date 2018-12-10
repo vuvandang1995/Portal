@@ -140,9 +140,9 @@ def home(request):
                                 image = im.__next__()
                                 if image['visibility'] == 'public':
                                     try:
-                                        Images.objects.create(ops=ops, name=image['name'], os=image['os_type'])
+                                        Images.objects.create(ops=ops, name=image['name'], os=image['os_type'], i_d=image.id)
                                     except:
-                                        Images.objects.create(ops=ops, name=image['name'], os='other')
+                                        Images.objects.create(ops=ops, name=image['name'], os='other', i_d=image.id)
                             except StopIteration:
                                 break
                         
@@ -445,7 +445,7 @@ def activate(request, uidb64, token):
                     external = 0
                 else:
                     external = 1
-                Networks.objects.create(owner=user, name=user.username, subnets_associated=subnet['subnet']['cidr'], shared=shared, external=external, status=net['network']['status'], admin_state_up=admin_state_up)
+                Networks.objects.create(owner=user, name='private_network_1', subnets_associated=subnet['subnet']['cidr'], shared=shared, external=external, status=net['network']['status'], admin_state_up=admin_state_up)
             except:
                 pass
         return redirect('/')

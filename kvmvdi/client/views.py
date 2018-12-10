@@ -11,7 +11,7 @@ import threading
 
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from superadmin.models import MyUser, Oders, Server, Sshkeys, Flavors, Images, Ops, Networks
+from superadmin.models import MyUser, Oders, Server, Sshkeys, Flavors, Images, Ops, Networks, Snapshot
 import binascii, os
 
 from superadmin.plugin.novaclient import nova
@@ -81,7 +81,6 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
     connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
                     project_domain_id='default')
     fl = connect.find_flavor(id=flavor.split(',')[3])
-    im = connect.find_image(image)
     net = ''
     for network in list_net_provider:
         try:
@@ -93,10 +92,18 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
             break
     if net == '':
         return "No IP availability!"
+    im = connect.find_image(image)
     try:
-        volume = connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=type_disk)
+        image_id = im.base_image_ref
+        try:
+            volume = connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=image_id, volume_type=type_disk)
+        except:
+            return "Xay ra loi khi tao volume!"
     except:
-        return "Xay ra loi khi tao volume!"
+        try:
+            volume = connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=type_disk)
+        except:
+            return "Xay ra loi khi tao volume!"
     if volume:
         check = False
         while check == False:
@@ -403,8 +410,11 @@ def instances(request):
                 connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
                                 project_domain_id='default')
                 connect.delete_vm(svid=svid)
-                server = Server.objects.get(name=svname, owner=user)
-                server.delete()
+                try:
+                    server = Server.objects.get(name=svname, owner=user)
+                    server.delete()
+                except:
+                    pass
                 # y = q.enqueue(deleteServer, svid, svname, user)
                 time.sleep(2)
                 # return HttpResponse(y.id)
@@ -473,10 +483,10 @@ def instances(request):
                 snapshotname = request.POST['snapshotname']
                 # print(request.POST)
                 try:
-                    connect.snapshot_vm(svid=svid, snapshotname=snapshotname)
+                    snapshot = connect.snapshot_vm(svid=svid, snapshotname=snapshotname)
+                    Snapshot.objects.create(ops=ops, name=snapshotname, owner=user, i_d=snapshot)
                 except:
                     return HttpResponse("Đã có lỗi xảy ra!")
-                
                 # server = Server.objects.get(name=request.POST['svname'])
                 # server.delete()
             elif 'backup' in request.POST:
@@ -537,17 +547,15 @@ def instances(request):
                 thread = EmailThread(email)
                 thread.start()
                 Sshkeys.objects.create(ops=ops, name=sshkeyname,owner=user)
-        images = []
         sshkeys = []
-        for im in Images.objects.filter(ops=Ops.objects.get(ip=OPS_IP)).values('name'):
-            images.append((im['name']))
         for sshkey in Sshkeys.objects.filter(ops=Ops.objects.get(ip=OPS_IP), owner=user).values('name'):
             sshkeys.append((sshkey['name']))
         return render(request, 'client/instances.html',{'username': mark_safe(json.dumps(user.username)),
                                 'DISK_SSD': DISK_SSD,
                                 'DISK_HDD': DISK_HDD,
                                 'flavors': Flavors.objects.filter(ops=Ops.objects.get(ip=OPS_IP)),
-                                'images': images,
+                                'images': Images.objects.filter(ops=Ops.objects.get(ip=OPS_IP)),
+                                'snapshots': Snapshot.objects.filter(ops=Ops.objects.get(ip=OPS_IP), owner=user),
                                 'sshkeys': sshkeys
                                 })
     else:
@@ -734,6 +742,36 @@ def networks(request):
     else:
         return HttpResponseRedirect('/')
 
+def snapshots(request):
+    user = request.user
+    if user.is_authenticated and user.is_adminkvm == False:
+        if request.method == 'POST':
+            if 'delete_snapshot' in request.POST:
+                try:
+                    Snapshot.objects.get(i_d=request.POST['delete_snapshot'])
+                except:
+                    return HttpResponse('Tên ssh key không tồn tại!')
+                ops = Ops.objects.get(ip=OPS_IP)
+                if not user.check_expired():
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                    user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
+                                             project_name=user.username, user_domain_id='default',
+                                             project_domain_id='default')
+                    user.save()
+                connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
+                               project_domain_id='default')
+                snapshot_id = request.POST['delete_snapshot']
+                try:
+                    connect.delete_snapshot(snapshot_id=snapshot_id)
+                    Snapshot.objects.get(i_d=request.POST['delete_snapshot']).delete()
+                except:
+                    return HttpResponse("Đã có lỗi xảy ra!")
+        return render(request, 'client/snapshots.html',{'username': mark_safe(json.dumps(user.username)),
+                                'snapshots': Snapshot.objects.filter(owner=user, ops=Ops.objects.get(ip=OPS_IP))
+                                })
+    else:
+        return HttpResponseRedirect('/')
+ 
 def sshkeys(request):
     user = request.user
     if user.is_authenticated and user.is_adminkvm == False:
@@ -790,7 +828,7 @@ def sshkeys(request):
                                project_domain_id='default')
                 sshkeyname = request.POST['delete_sshkey']
                 try:
-                    key = connect.delete_sshkey(sshkeyname=sshkeyname)
+                    connect.delete_sshkey(sshkeyname=sshkeyname)
                     Sshkeys.objects.get(name=request.POST['delete_sshkey']).delete()
                 except:
                     return HttpResponse("Đã có lỗi xảy ra!")

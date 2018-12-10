@@ -68,10 +68,13 @@ class nova():
     def delete_sshkey(self, sshkeyname):
         self.nova.keypairs.delete(key=sshkeyname)
 
+    def delete_snapshot(self, snapshot_id):
+        self.glance.images.delete(snapshot_id)
+
     def deleteFlavor(self, i_d):
         self.nova.flavors.delete(i_d)
 
-    def create_volume(self, name, imageRef, size, volume_type):
+    def create_volume(self, name, size, volume_type, imageRef=None):
         if int(size) > 0:
             return self.cinder.volumes.create(size=size, name=name, imageRef=imageRef, volume_type=volume_type)
         else:

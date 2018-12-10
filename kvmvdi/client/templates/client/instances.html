@@ -155,60 +155,127 @@
                         <h3 style="font-size:19px;">
                             Select boot Source
                         </h3>
+                        <select class="form-control" name="state" id="type_image">
+                            <option value="image">Image</option>
+                            <option value="snapshot">Snapshot</option>
+                        </select>
+                        <br>
                         <form class="image_select">
                             {% for im in images%}
-                                {% if "win" in im %}
+                                {% if "win" in im.name %}
                                     <label>
-                                        <input type="radio" name="image" value="{{im}}">
+                                        <input type="radio" name="image" value="{{im.i_d}}" data-name="{{im.name}}">
                                         <div class='all row hide_image'>
                                             <div class='col-md-5'>
                                                 <img src="{% static 'images/portal/img/windows.png' %}" alt="" height="62px" width="62px">
                                             </div>
                                             <div class='col-md-7 bootSource'>
                                                 <span>
-                                                    {{im}}
+                                                    {{im.name}}
                                                 </span>
                                             </div>
                                         </div>
                                     </label>
-                                {% elif "cen" in im%}
+                                {% elif "cen" in im.name %}
                                     <label>
-                                        <input type="radio" name="image" value="{{im}}">
+                                        <input type="radio" name="image" value="{{im.i_d}}" data-name="{{im.name}}">
                                         <div class='all row hide_image'>
                                             <div class='col-md-5'>
                                                 <img src="{% static 'images/portal/img/CentOS_logo.gif' %}" alt="" height="62px" width="62px">
                                             </div>
                                             <div class='col-md-7 bootSource'>
                                                 <span>
-                                                    {{im}}
+                                                    {{im.name}}
                                                 </span>
                                             </div>
                                         </div>
                                     </label>
-                                {% elif "u" in im%}
+                                {% elif "u" in im.name %}
                                     <label>
-                                        <input type="radio" name="image" value="{{im}}">
+                                        <input type="radio" name="image" value="{{im.i_d}}" data-name="{{im.name}}">
                                         <div class='all row hide_image'>
                                             <div class='col-md-5'>
                                                 <img src="{% static 'images/portal/img/ubuntu_logo.gif' %}" alt="" height="62px" width="62px">
                                             </div>
                                             <div class='col-md-7 bootSource'>
                                                 <span>
-                                                    {{im}}
+                                                    {{im.name}}
                                                 </span>
                                             </div>
                                         </div>
                                     </label>
                                 {% else%}
                                     <label>
-                                        <input type="radio" name="image" value="{{im}}">
+                                        <input type="radio" name="image" value="{{im.i_d}}" data-name="{{im.name}}">
                                         <div class='all row hide_image'>
                                             <div class='col-md-5'>
                                                 <img src="{% static 'images/portal/img/CentOS_logo.png' %}" alt="" height="62px" width="62px">
                                             </div>
                                             <div class='col-md-7 bootSource'>
                                                 <span>
-                                                    {{im}}
+                                                    {{im.name}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                {% endif%}
+                            {% endfor%}
+                        </form>
+
+                        <form class="snapshot_select" hidden>
+                            {% for sn in snapshots%}
+                                {% if "win" in sn.name %}
+                                    <label>
+                                        <input type="radio" name="sn" value="{{sn.i_d}}" data-name="{{sn.name}}">
+                                        <div class='all row'>
+                                            <div class='col-md-5'>
+                                                <img src="{% static 'images/portal/img/windows.png' %}" alt="" height="62px" width="62px">
+                                            </div>
+                                            <div class='col-md-7 bootSource'>
+                                                <span>
+                                                    {{sn.name}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                {% elif "cen" in sn.name %}
+                                    <label>
+                                        <input type="radio" name="sn" value="{{sn.i_d}}" data-name="{{sn.name}}">
+                                        <div class='all row'>
+                                            <div class='col-md-5'>
+                                                <img src="{% static 'images/portal/img/CentOS_logo.gif' %}" alt="" height="62px" width="62px">
+                                            </div>
+                                            <div class='col-md-7 bootSource'>
+                                                <span>
+                                                    {{sn.name}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                {% elif "u" in sn.name %}
+                                    <label>
+                                        <input type="radio" name="sn" value="{{sn.i_d}}" data-name="{{sn.name}}">
+                                        <div class='all row'>
+                                            <div class='col-md-5'>
+                                                <img src="{% static 'images/portal/img/ubuntu_logo.gif' %}" alt="" height="62px" width="62px">
+                                            </div>
+                                            <div class='col-md-7 bootSource'>
+                                                <span>
+                                                    {{sn.name}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                {% else%}
+                                    <label>
+                                        <input type="radio" name="sn" value="{{sn.i_d}}" data-name="{{sn.name}}">
+                                        <div class='all row'>
+                                            <div class='col-md-5'>
+                                                <img src="{% static 'images/portal/img/CentOS_logo.png' %}" alt="" height="62px" width="62px">
+                                            </div>
+                                            <div class='col-md-7 bootSource'>
+                                                <span>
+                                                    {{sn.name}}
                                                 </span>
                                             </div>
                                         </div>

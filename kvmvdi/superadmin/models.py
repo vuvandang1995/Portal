@@ -130,6 +130,7 @@ class Images(models.Model):
     ops = models.ForeignKey('Ops', models.CASCADE, db_column='ops')
     name = models.CharField(max_length=255)
     os = models.CharField(max_length=255)
+    i_d = models.CharField(max_length=255)
 
     class Meta:
         managed = True
@@ -139,7 +140,7 @@ class Snapshot(models.Model):
     ops = models.ForeignKey('Ops', models.CASCADE, db_column='ops')
     name = models.CharField(max_length=255)
     owner = models.ForeignKey('Myuser', models.CASCADE, db_column='owner')
-    created = models.CharField(max_length=255, null=True)
+    i_d = models.CharField(max_length=255)
 
     class Meta:
         managed = True

@@ -20,7 +20,12 @@ $(document).ready(function(){
                 image = $(this).val();
             }
         });
-        
+
+        $('.snapshot_select input[name="sn"]').each(function() {
+            if ($(this).is(':checked')){
+                image = $(this).val();
+            }
+        });
         
         // var flavor = document.getElementById("mySelect").value;
         $('.flavor_select').find('label').children().each(function() {
@@ -167,8 +172,11 @@ $(document).ready(function(){
     });
 
     $('body .hide_image').click(function(){
-        var image = $(this).prev().val();
+        var image = $(this).prev().data('name');
         if ((image.includes("wi")) || (image.includes("Wi"))){
+            $('.flavor_select input[name="image"]').each(function() {
+                $(this).prop('checked',false);
+            });
             $('.sshkey_hide').hide();
             $('.price_step').text('6');
             $('body .disk_').each(function(){
@@ -178,6 +186,9 @@ $(document).ready(function(){
                 }
             });
         }else{
+            $('.flavor_select input[name="image"]').each(function() {
+                $(this).prop('checked',false);
+            });
             $('.sshkey_hide').show();
             $('.price_step').text('7');
             $('body .disk_').each(function(){
@@ -204,6 +215,23 @@ $(document).ready(function(){
             price_new = (parseInt(ram) * 50000 + parseInt(vcpus) * 60000 + parseInt(disk) * 5000);
         }
         $("body input[name=price]").val(price_new);
+    });
+
+    $('#type_image').on('change', function() {
+        $('.image_select input[name="image"]').each(function() {
+            $(this).prop('checked',false);
+        });
+        $('.snapshot_select input[name="sn"]').each(function() {
+            $(this).prop('checked',false);
+        });
+        var type_image = $(this).val();
+        if (type_image == 'snapshot'){
+            $('.snapshot_select').show();
+            $('.image_select').hide();
+        }else if (type_image == 'image'){
+            $('.image_select').show();
+            $('.snapshot_select').hide();
+        }
     });
 
     $('#close_modal_sshkey').click(function(){
