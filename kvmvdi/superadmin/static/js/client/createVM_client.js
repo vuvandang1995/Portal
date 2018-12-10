@@ -75,7 +75,7 @@ $(document).ready(function(){
                                 opsSocket.send(JSON.stringify({
                                     'message' : msg,
                                 }));
-                            }, 6000);
+                            }, 4000);
                             setTimeout(function(){
                                 $('.list_vm_client').DataTable().ajax.reload(null,false);
                             }, 6000);

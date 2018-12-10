@@ -56,7 +56,7 @@ class nova():
         # self.nova.servers.create(svname, flavor=flavor, image=image, nics = [{'net-id':network_id}], max_count=max_count, availability_zone='nova:compute2')
             return self.nova.servers.create(svname, flavor=flavor, image=image, nics = [{'net-id':network_id}], block_device_mapping = {'vda': volume_id}, userdata=userdata, key_name=key_name, max_count=max_count)
         else:
-            id_private_net = self.nova.neutron.find_network(private_network).id
+            id_private_net = self.nova.neutron.find_network('private_network_1').id
             return self.nova.servers.create(svname, flavor=flavor, image=image, nics = [{'net-id':network_id}, {'net-id':id_private_net}], block_device_mapping = {'vda': volume_id}, userdata=userdata, key_name=key_name, max_count=max_count)
 
     def createFlavor(self, svname, ram, vcpus, disk):
@@ -99,7 +99,7 @@ class nova():
         self.nova.servers.rebuild(svid, image=image, disk_config=disk_config)
 
     def snapshot_vm(self, svid, snapshotname):
-        self.nova.servers.create_image(svid, image_name=snapshotname)
+        return self.nova.servers.create_image(svid, image_name=snapshotname)
 
     def resetpass(self, svid, newpass):
         self.nova.servers.change_password(svid, password=newpass)

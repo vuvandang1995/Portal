@@ -215,10 +215,14 @@ $(document).ready(function(){
                                         title: msg,
                                     });
                                 }else{
-                                    swal.close();
-                                    opsSocket.send(JSON.stringify({
-                                        'message' : msg,
-                                    }));
+                                    // swal.close();
+                                    // opsSocket.send(JSON.stringify({
+                                    //     'message' : msg,
+                                    // }));
+                                    setTimeout(function(){
+                                        $('.list_vm_client').DataTable().ajax.reload(null,false);
+                                        swal.close();
+                                    }, 3000);
                                 }
                             }
                         });

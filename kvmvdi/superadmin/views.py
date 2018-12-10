@@ -430,7 +430,7 @@ def activate(request, uidb64, token):
             connect_user = keystone(ip=OPS_IP, username=user.username, password=user.username, project_name=user.username,
                             user_domain_id='default', project_domain_id='default')
             try:
-                net_id = connect_user.create_network(user.username)
+                net_id = connect_user.create_network(network_name='private_network_1')
                 net = connect_user.show_network(net_id)
                 subnet = connect_user.show_subnet(net['network']['subnets'][0])
                 if net['network']['shared'] == False:

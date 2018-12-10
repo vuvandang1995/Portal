@@ -80,15 +80,9 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
         user.save()
     connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
                     project_domain_id='default')
+    fl = connect.find_flavor(id=flavor.split(',')[3])
+    im = connect.find_image(image)
     net = ''
-    try:
-        fl = connect.find_flavor(id=flavor.split(',')[3])
-    except:
-        return "Xay ra loi khi check flavor!"
-    try:
-        im = connect.find_image(image)
-    except:
-        return "Xay ra loi khi check image!"
     for network in list_net_provider:
         try:
             ip_net = connect.find_network(network)
@@ -128,7 +122,6 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
         return "Xay ra loi khi create Server!"
     user.money = str(float(user.money) - float(price))
     user.save()
-    Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
     Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=svname)
     time.sleep(5)
     while (1):
@@ -354,19 +347,67 @@ def instances(request):
                         return HttpResponse('Tên server bị trùng!')
                     except:
                         pass
+                    user_admin = MyUser.objects.get(username='admin')
+                    if user_admin.is_active and user_admin.is_adminkvm:
+                        if user_admin.token_id is None or user_admin.check_expired() == False:
+                            user_admin.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                            user_admin.token_id = getToken(ip=OPS_IP, username=OPS_ADMIN, password=OPS_PASSWORD, project_name=OPS_PROJECT, user_domain_id='default', project_domain_id='default')
+                            user_admin.save()
+                    connect_neutron = neutron_(ip=OPS_IP, token_id=user_admin.token_id, project_name=OPS_PROJECT, project_domain_id='default')
+                    if not user.check_expired():
+                        user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                        user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
+                                                    project_name=user.username, user_domain_id='default',
+                                                    project_domain_id='default')
+                        user.save()
+                    connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
+                                    project_domain_id='default')
+                    net = ''
+                    try:
+                        fl = connect.find_flavor(id=flavor.split(',')[3])
+                    except:
+                        return HttpResponse("Xay ra loi khi check flavor!")
+                    try:
+                        im = connect.find_image(image)
+                    except:
+                        return HttpResponse("Xay ra loi khi check image!")
+                    for network in list_net_provider:
+                        try:
+                            ip_net = connect.find_network(network)
+                        except:
+                            return HttpResponse("Xay ra loi khi check network!")
+                        if connect_neutron.free_ips(ip_net=ip_net) > 2:
+                            net = ip_net
+                            break
+                    if net == '':
+                        return HttpResponse("No IP availability!")
+                    Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
                     if o_s is None:
                         x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s, cloudinit, sshkey)
                     else:
                         x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s)
                     # createServer(type_disk=type_disk, flavor=flavor, image=image, svname=svname, private_network=private_network, cloudinit=cloudinit, sshkey=sshkey, count=count, user=user, root_pass=root_pass, price=price)
+                    time.sleep(3)
                     return HttpResponse(x.id)
                 else:
                     return HttpResponseRedirect('/')
             elif 'delete' in request.POST:
                 svid = request.POST['delete']
                 svname = request.POST['svname']
-                y = q.enqueue(deleteServer, svid, svname, user)
-                return HttpResponse(y.id)
+                if not user.check_expired():
+                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                    user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
+                                                project_name=user.username, user_domain_id='default',
+                                                project_domain_id='default')
+                    user.save()
+                connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
+                                project_domain_id='default')
+                connect.delete_vm(svid=svid)
+                server = Server.objects.get(name=svname, owner=user)
+                server.delete()
+                # y = q.enqueue(deleteServer, svid, svname, user)
+                time.sleep(2)
+                # return HttpResponse(y.id)
             elif 'start' in request.POST:
                 ops = Ops.objects.get(ip=OPS_IP)
                 if not user.check_expired():
