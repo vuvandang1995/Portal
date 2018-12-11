@@ -92,16 +92,16 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
             break
     if net == '':
         return "No IP availability!"
-    im = connect.find_image(image)
     try:
+        im_snap = connect.find_image(image)
+        im = connect.find_image(im_snap.base_image_ref)
+        snapshot_id = im_snap.block_device_mapping.split('"snapshot_id": "')[1].split('", "device_name":')[0]
         try:
-            snapshot_id = im.block_device_mapping.split('"snapshot_id": "')[1].split('", "device_name":')[0]
-            volume_size = im.block_device_mapping.split('"volume_size": ')[1].split('}]')[0]
-            volume = connect.create_volume(name=svname, size=volume_size, snapshot_id=snapshot_id)
-            im = connect.find_image(im.base_image_ref)
+            volume = connect.create_volume(name=svname, size=flavor.split(',')[2], snapshot_id=snapshot_id)
         except:
-            return "Xay ra loi khi tao volume!"
+            return "Xay ra loi khi tao volume snapshot!"
     except:
+        im = connect.find_image(image)
         try:
             volume = connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=im.id, volume_type=type_disk)
         except:
@@ -117,7 +117,7 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
             else:
                 time.sleep(2)
     else:
-        return "Xay ra loi khi tao volume!"
+        return "Xay ra loi3 khi tao volume!"
     
     try:
         if o_s is not None:
@@ -130,6 +130,7 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
         except:
             pass
         return "Xay ra loi khi create Server!"
+    Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
     user.money = str(float(user.money) - float(price))
     user.save()
     Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=svname)
@@ -228,12 +229,10 @@ def show_instances(request, serverid):
                 connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username, project_domain_id='default')
                 svid = request.POST['snapshot']
                 try:
-                    snapshotname = request.POST['snapshotname']
+                    snapshot = connect.snapshot_vm(svid=svid, snapshotname=request.POST['snapshotname'])
+                    Snapshot.objects.create(ops=ops, name=request.POST['snapshotname'], owner=user, i_d=snapshot)
                 except:
                     return HttpResponse("Đã có lỗi xảy ra!")
-                
-                # print(request.POST)
-                connect.snapshot_vm(svid=svid, snapshotname=snapshotname)
             elif 'resetpass' in request.POST:
                 ops = Ops.objects.get(ip=OPS_IP)
                 if not user.check_expired():
@@ -377,11 +376,12 @@ def instances(request):
                         fl = connect.find_flavor(id=flavor.split(',')[3])
                     except:
                         return HttpResponse("Xay ra loi khi check flavor!")
+
                     try:
                         im = connect.find_image(image)
-                        connect.find_image(im.base_image_ref)
                     except:
                         return HttpResponse("Xay ra loi khi check image!")
+
                     for network in list_net_provider:
                         try:
                             ip_net = connect.find_network(network)
@@ -392,12 +392,17 @@ def instances(request):
                             break
                     if net == '':
                         return HttpResponse("No IP availability!")
-                    Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
+
+                    try:
+                        volume_size = im.block_device_mapping.split('"volume_size": ')[1].split('}]')[0]
+                        if flavor.split(',')[2] < volume_size:
+                            return HttpResponse("Dung luong disk qua nho!")
+                    except:
+                        pass
                     if o_s is None:
                         x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s, cloudinit, sshkey)
                     else:
                         x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s)
-                    # createServer(type_disk=type_disk, flavor=flavor, image=image, svname=svname, private_network=private_network, cloudinit=cloudinit, sshkey=sshkey, count=count, user=user, root_pass=root_pass, price=price)
                     time.sleep(3)
                     return HttpResponse(x.id)
                 else:

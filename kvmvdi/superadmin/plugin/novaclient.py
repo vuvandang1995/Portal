@@ -75,10 +75,7 @@ class nova():
         self.nova.flavors.delete(i_d)
 
     def create_volume(self, name, size, volume_type=None, imageRef=None, snapshot_id=None):
-        if int(size) > 0:
-            return self.cinder.volumes.create(size=size, name=name, imageRef=imageRef, snapshot_id=snapshot_id, volume_type=volume_type)
-        else:
-            return self.cinder.volumes.create(size='10', name=name, imageRef=imageRef, snapshot_id=snapshot_id, volume_type=volume_type)
+        return self.cinder.volumes.create(size=size, name=name, imageRef=imageRef, snapshot_id=snapshot_id, volume_type=volume_type)
 
     def delete_volume(self, volume):
         return self.cinder.volumes.delete(volume=volume)
