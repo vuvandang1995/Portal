@@ -94,9 +94,11 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
         return "No IP availability!"
     im = connect.find_image(image)
     try:
-        image_id = im.base_image_ref
         try:
-            volume = connect.create_volume(name=svname, size=flavor.split(',')[2], imageRef=image_id, volume_type=type_disk)
+            snapshot_id = im.block_device_mapping.split('"snapshot_id": "')[1].split('", "device_name":')[0]
+            volume_size = im.block_device_mapping.split('"volume_size": ')[1].split('}]')[0]
+            volume = connect.create_volume(name=svname, size=volume_size, snapshot_id=snapshot_id)
+            im = connect.find_image(im.base_image_ref)
         except:
             return "Xay ra loi khi tao volume!"
     except:
@@ -116,6 +118,7 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
                 time.sleep(2)
     else:
         return "Xay ra loi khi tao volume!"
+    
     try:
         if o_s is not None:
             serverVM = connect.createVM(svname=svname, flavor=fl, image=im, network_id=net, private_network=private_network, volume_id=volume_id, max_count=count)
@@ -376,6 +379,7 @@ def instances(request):
                         return HttpResponse("Xay ra loi khi check flavor!")
                     try:
                         im = connect.find_image(image)
+                        connect.find_image(im.base_image_ref)
                     except:
                         return HttpResponse("Xay ra loi khi check image!")
                     for network in list_net_provider:
