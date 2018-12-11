@@ -396,14 +396,14 @@ def instances(request):
                     try:
                         volume_size = im.block_device_mapping.split('"volume_size": ')[1].split('}]')[0]
                         if flavor.split(',')[2] < volume_size:
-                            return HttpResponse("Dung luong disk qua nho!")
+                            return HttpResponse("Dung luong disk khong duoc nho hon "+volume_size)
                     except:
                         pass
                     if o_s is None:
                         x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s, cloudinit, sshkey)
                     else:
                         x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s)
-                    time.sleep(3)
+                    time.sleep(2)
                     return HttpResponse(x.id)
                 else:
                     return HttpResponseRedirect('/')
@@ -425,7 +425,7 @@ def instances(request):
                 except:
                     pass
                 # y = q.enqueue(deleteServer, svid, svname, user)
-                time.sleep(2)
+                time.sleep(1)
                 # return HttpResponse(y.id)
             elif 'start' in request.POST:
                 ops = Ops.objects.get(ip=OPS_IP)
