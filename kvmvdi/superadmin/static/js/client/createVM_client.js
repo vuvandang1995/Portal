@@ -93,7 +93,7 @@ $(document).ready(function(){
                     url:location.href,
                     data: {'svname': svname, 'type_disk': type_disk, 'private_network': private_network, 'sshkey': sshkey, 'price': price, 'csrfmiddlewaretoken':token, 'image': image, 'flavor': flavor},
                     success: function(msg){
-                        if ((msg == "Vui long nap them tien vao tai khoan!") || (msg == "Dung luong disk qua nho!") || (msg == "No IP availability!") || (msg == "Xay ra loi khi tao volume!")  || (msg == "Xay ra loi khi tao Server!") || (msg == "Xay ra loi khi check flavor!") || (msg == "Xay ra loi khi check image!") || (msg == "Xay ra loi khi check network!") || (msg == "Tên server bị trùng!")){
+                        if ((msg == "Vui long nap them tien vao tai khoan!") || (msg.includes("Dung luong disk khong")) || (msg == "No IP availability!") || (msg == "Xay ra loi khi tao volume!")  || (msg == "Xay ra loi khi tao Server!") || (msg == "Xay ra loi khi check flavor!") || (msg == "Xay ra loi khi check image!") || (msg == "Xay ra loi khi check network!") || (msg == "Tên server bị trùng!")){
                         // if (msg != ''){
                             swal({
                                 type: 'warning',
