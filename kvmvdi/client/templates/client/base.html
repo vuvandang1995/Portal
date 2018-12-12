@@ -175,12 +175,12 @@
                                                 SSH Keys
                                         </a>
                                     </li>
-                                    <li class="item-nav">
+                                    {% comment %} <li class="item-nav">
                                         <a href="{% url 'client:volumes' %}">
                                             <img alt="" src="{% static 'images/portal/img/round-view_column-24px.png' %}">
                                                 Volumes
                                         </a>
-                                    </li>
+                                    </li> {% endcomment %}
                                     {% comment %} <li class="item-nav">
                                         <a href="#">
                                             <img alt="" src="{% static 'images/portal/img/Myimages.png' %}">
@@ -307,6 +307,9 @@
                             <input type="hidden" value="" name="project">
                             <label><b>New password</b></label>
                             <input class="form-control" type="password" placeholder="New password" name="resetpass" required>
+                            <br>
+                            <label><b>Repeat Password</b></label>
+                            <input class="form-control" type="password" placeholder="Repeat password" name="password2" required>
 
                             <div><font id="invalid-msg" color="red" size="5"></font></div>
 
@@ -408,7 +411,7 @@
         }else{
             setTimeout(function(){
                 $('.list_vm_client').DataTable().ajax.reload(null,false);
-            }, 1000);
+            }, 500);
         }
         $("#success").html(message).removeClass("hide").hide().fadeIn()
         setTimeout(function(){

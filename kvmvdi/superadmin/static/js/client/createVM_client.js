@@ -46,7 +46,8 @@ $(document).ready(function(){
         // var disk = $("input[name=disk]").val();
         var count = $("input[name=count]").val();
         var price = $("input[name=price]").val();
-        if ((svname == '') || (type_disk == '') || (price == '') || (image == '') || (flavor == '') || (count == '')){
+        
+        if ((svname == '') || (type_disk == '') || (price == '') || (image == '') || (flavor == '') || (count == '') || (image == undefined) || (flavor == undefined)){
             swal({
                 type: 'warning',
                 title: "Vui lòng điền đầy đủ thông tin",
@@ -76,14 +77,16 @@ $(document).ready(function(){
                             swal.close();
                             $("#success").html('Tao server thanh cong!').removeClass("hide").hide().fadeIn()
                             setTimeout(function(){
+                                $('.list_vm_client').DataTable().ajax.reload(null,false);
+                                // window.location.reload();
+                            }, 1000);
+                            setTimeout(function(){
                                 $("#success").fadeOut("slow");
                                 opsSocket.send(JSON.stringify({
                                     'message' : msg,
                                 }));
                             }, 4000);
-                            setTimeout(function(){
-                                $('.list_vm_client').DataTable().ajax.reload(null,false);
-                            }, 6000);
+                            
                         }
                     },
                 });
@@ -103,14 +106,15 @@ $(document).ready(function(){
                             swal.close();
                             $("#success").html('Tao server thanh cong!').removeClass("hide").hide().fadeIn()
                             setTimeout(function(){
+                                $('.list_vm_client').DataTable().ajax.reload(null,false);
+                                // window.location.reload();
+                            }, 1000);
+                            setTimeout(function(){
                                 $("#success").fadeOut("slow");
                                 opsSocket.send(JSON.stringify({
                                     'message' : msg,
                                 }));
-                            }, 6000);
-                            setTimeout(function(){
-                                $('.list_vm_client').DataTable().ajax.reload(null,false);
-                            }, 6000);
+                            }, 4000);
                         }
                     },
                 });
@@ -221,12 +225,18 @@ $(document).ready(function(){
         $('.image_select input[name="image"]').each(function() {
             $(this).prop('checked',false);
         });
+
         $('.snapshot_select input[name="sn"]').each(function() {
+            $(this).prop('checked',false);
+        });
+
+        $('.flavor_select input[name="image"]').each(function() {
             $(this).prop('checked',false);
         });
         var type_image = $(this).val();
         if (type_image == 'snapshot'){
             $('.snapshot_select').show();
+            $('.flavor_').show();
             $('.image_select').hide();
         }else if (type_image == 'image'){
             $('.image_select').show();

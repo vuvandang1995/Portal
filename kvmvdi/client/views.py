@@ -130,16 +130,26 @@ def createServer(type_disk, flavor, image, svname, private_network, count, user,
         except:
             pass
         return "Xay ra loi khi create Server!"
-    Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
     user.money = str(float(user.money) - float(price))
     user.save()
     Oders.objects.create(service='cloud', price=price, created=timezone.now(), owner=user, server=svname)
-    time.sleep(5)
+    try:
+        sv = Server.objects.get(name=svname)
+        sv.i_d = serverVM.id
+        sv.save()
+    except:
+        pass
     while (1):
         if connect.get_server(serverVM.id).status != 'BUILD':
             break
         else:
             time.sleep(2)
+    try:
+        sv = Server.objects.get(name=svname)
+        sv.created = serverVM.created
+        sv.save()
+    except:
+        pass
     mail_subject = 'Thông tin server của bạn là: '
     IP_Private = ''
     if private_network == '0':
@@ -403,6 +413,7 @@ def instances(request):
                         x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s, cloudinit, sshkey)
                     else:
                         x = q.enqueue(createServer, type_disk, flavor, image, svname, private_network, count, user, root_pass, price, o_s)
+                    Server.objects.create(project=user.username, description='test', name=svname, ram=flavor.split(',')[0], vcpus=flavor.split(',')[1], disk=flavor.split(',')[2], owner=user)
                     time.sleep(2)
                     return HttpResponse(x.id)
                 else:
@@ -572,40 +583,25 @@ def instances(request):
 
 def home_data(request):
     user = request.user
-
-    # ip = OPS_IP
-    # username = 'admin'
-    # password = 'ok123'
-    # project_name = 'admin'
-    # user_domain_id = 'default'
-    # project_domain_id = 'default'
-    # connect = keystone(ip=ip, username=username, password=password, project_name=project_name, user_domain_id=user_domain_id, project_domain_id=project_domain_id)
-    # # connect.add_user_to_project()
-    # connect.get_role()
     if user.is_authenticated and user.is_adminkvm == False:
-        if Ops.objects.get(ip=OPS_IP):
-            thread = check_ping(host=OPS_IP)
-            if thread.run():
-                ops = Ops.objects.get(ip=OPS_IP)
-                if not user.check_expired():
-                    user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
-                    user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
-                                             project_name=user.username, user_domain_id='default',
-                                             project_domain_id='default')
-                    user.save()
-                connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
-                               project_domain_id='default')
-                # print(connect.find_hypervisor('2'))
-                data = []
-                for item in connect.list_server():
-                    # print(item.status)
-                    # print(dir(item))
-                    # print(item.networks)
-                    try:
-                        name = '''<a href="/client/show_instances/'''+item._info['id']+'''"><p>'''+item._info['name']+'''</p></a>'''
-                    except:
-                        name = '<p></p>'
-
+        thread = check_ping(host=OPS_IP)
+        if thread.run():
+            if not user.check_expired():
+                user.token_expired = timezone.datetime.now() + timezone.timedelta(seconds=OPS_TOKEN_EXPIRED)
+                user.token_id = getToken(ip=OPS_IP, username=user.username, password=user.username,
+                                            project_name=user.username, user_domain_id='default',
+                                            project_domain_id='default')
+                user.save()
+            connect = nova(ip=OPS_IP, token_id=user.token_id, project_name=user.username,
+                            project_domain_id='default')
+            servers = Server.objects.filter(owner=user)
+            data = []
+            for sv in servers:
+                ip = '<p></p>'
+                status = '<p>BUILD</p><div class="progress"><div class="progress-bar progress-bar-striped progress-bar-animated active" style="width:100%"></div></div>'
+                actions = ''
+                try:
+                    item = connect.get_server(sv.i_d)
                     try:
                         ip = '<p>'
                         for key, value in item.networks.items():
@@ -615,22 +611,10 @@ def home_data(request):
                         ip += '</p>'
                     except:
                         ip = '<p></p>'
+                    
                     try:
-                        ram = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).ram)+'</p>'
-                    except:
-                        ram = '<p></p>'
-                    try:
-                        vcpus = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).vcpus)+'</p>'
-                    except:
-                        vcpus = '<p></p>'
-                    try:
-                        xx = Server.objects.get(name=item._info['name'], owner=user)
-                        disk = '<p>'+str(xx.disk)+'</p>'
-                    except:
-                        disk = '<p>'+str(connect.find_flavor(id=item._info['flavor']['id']).disk)+'</p>'
-                    try:
-                        if item._info['status'] == 'ACTIVE':
-                            status = '<span class="label label-success">'+item._info['status']+'</span>'
+                        if item.status == 'ACTIVE':
+                            status = '<span class="label label-success">'+item.status+'</span>'
                             try:
                                 actions = '''
                                 <div>
@@ -638,19 +622,20 @@ def home_data(request):
                                     Actions <span class="caret"></span></button>
                                     <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul" style="position: relative !important;">
                                         <li>
-                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                            <a data-batch-action="true" data-toggle="modal" data-target="#snapshot" class="data-table-action control" name="'''+sv.name+'''" id="snapshot_'''+item._info['id']+'''" type="submit" data-backdrop="false"> Create Snapshot</a>
                                         </li>
                                         <li>
-                                            <a data-batch-action="true" data-toggle="modal" data-target="#backup" class="data-table-action control" name="'''+item._info['name']+'''" id="backup_'''+item._info['id']+'''" type="submit" data-backdrop="false">Backup</a>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+sv.name+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
                                         </li>
+                                    
                                         <li>
                                             <a data-batch-action="true" class="data-table-action console" data-title="console" id="'''+item.get_console_url("novnc")["console"]["url"]+'''" type="submit"> Console Instance</a>
                                         </li>
                                         <li>
-                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="reboot_'''+item._info['id']+'''" type="submit"> Reboot Instance</a>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+sv.name+'''" id="reboot_'''+item._info['id']+'''" type="submit"> Reboot Instance</a>
                                         </li>
                                         <li>
-                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="stop_'''+item._info['id']+'''" type="submit"> Stop Instance</a>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+sv.name+'''" id="stop_'''+item._info['id']+'''" type="submit"> Stop Instance</a>
                                         </li>
 
                                     </ul>
@@ -663,40 +648,41 @@ def home_data(request):
                                     Actions <span class="caret"></span></button>
                                     <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul" style="position: relative !important;">
                                         <li>
-                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                            <a data-batch-action="true" data-toggle="modal" data-target="#snapshot" class="data-table-action control" name="'''+sv.name+'''" id="snapshot_'''+item._info['id']+'''" type="submit" data-backdrop="false"> Create Snapshot</a>
                                         </li>
                                         <li>
-                                            <a data-batch-action="true" data-toggle="modal" data-target="#backup" class="data-table-action control" name="'''+item._info['name']+'''" id="backup_'''+item._info['id']+'''" type="submit" data-backdrop="false">Backup</a>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+sv.name+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                        </li>
+                                        
+                                        <li>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+sv.name+'''" id="reboot_'''+item._info['id']+'''" type="submit"> Reboot Instance</a>
                                         </li>
                                         <li>
-                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="reboot_'''+item._info['id']+'''" type="submit"> Reboot Instance</a>
-                                        </li>
-                                        <li>
-                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="stop_'''+item._info['id']+'''" type="submit"> Stop Instance</a>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+sv.name+'''" id="stop_'''+item._info['id']+'''" type="submit"> Stop Instance</a>
                                         </li>
                                     </ul>
                                 <div>
                                 '''
-                        elif item._info['status'] == 'SHUTOFF':
-                            status = '<span class="label label-danger">'+item._info['status']+'</span>'
+                        elif item.status == 'SHUTOFF':
+                            status = '<span class="label label-danger">'+item.status+'</span>'
                             actions = '''
                                 <div class='nav-item'>
                                     <button type="button" class="btn btn-primary dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Actions <span class="caret"></span></button>
                                     <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul">
                                         <li>
-                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+sv.name+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
                                         </li>
                                         <li>
-                                            <a data-batch-action="true" data-toggle="modal" data-target="#snapshot" class="data-table-action control" name="'''+item._info['name']+'''" id="snapshot_'''+item._info['id']+'''" type="submit" data-backdrop="false"> Create Snapshot</a>
+                                            <a data-batch-action="true" data-toggle="modal" data-target="#snapshot" class="data-table-action control" name="'''+sv.name+'''" id="snapshot_'''+item._info['id']+'''" type="submit" data-backdrop="false"> Create Snapshot</a>
                                         </li>
                                         <li>
-                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="start_'''+item._info['id']+'''" type="submit"> Start Instance</a>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+sv.name+'''" id="start_'''+item._info['id']+'''" type="submit"> Start Instance</a>
                                         </li>
                                     </ul>
                                 <div>
                                 '''
-                        elif item._info['status'] == 'BUILD':
+                        elif item.status == 'BUILD':
                             status = '<p>BUILD</p><div class="progress"><div class="progress-bar progress-bar-striped progress-bar-animated active" style="width:100%"></div></div>'
                             actions = '''
                                 <div class='nav-item'>
@@ -704,43 +690,50 @@ def home_data(request):
                                     Actions <span class="caret"></span></button>
                                     <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul">
                                         <li>
-                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+sv.name+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
                                         </li>
                                     </ul>
                                 <div>
                                 '''
                         else:
-                            status = '<span class="label label-danger">'+item._info['status']+'</span>'
+                            status = '<span class="label label-danger">'+item.status+'</span>'
                             actions = '''
                                 <div class='nav-item'>
                                     <button type="button" class="btn btn-primary dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Actions <span class="caret"></span></button>
                                     <ul class="dropdown-menu dropdown-menu-right" role="menu" id= "nav_ul">
                                         <li>
-                                            <a data-batch-action="true" class="data-table-action control" name="'''+item._info['name']+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
+                                            <a data-batch-action="true" class="data-table-action control" name="'''+sv.name+'''" id="del_'''+item._info['id']+'''" type="submit"> Delete Instance</a>
                                         </li>
                                     </ul>
                                 <div>
                                 '''
                     except:
-                        status = '<span class="label label-danger"></span>'
+                        ip = '<p></p>'
+                        status = '<p>BUILD</p><div class="progress"><div class="progress-bar progress-bar-striped progress-bar-animated active" style="width:100%"></div></div>'
                         actions = ''
-                    try:
-                        created = '<p>'+item._info['created']+'</p>'
-                    except:
-                        created = '<p></p>'
-                    
-                    # data.append([host, name, image_name, ip, network, flavor, status, created, actions])
-                    data.append([name, ip, ram, vcpus, disk, status, created, actions])
-                big_data = {"data": data}
-                json_data = json.loads(json.dumps(big_data))
-                return JsonResponse(json_data)
-            else:
-                data = []
-                data.append(['<p></p>', '<p></p>', '<p></p>', '<p></p>', '<p></p>', '<p></p>', '<p></p>', '<p></p>'])
-                big_data = {"data": data}
-                json_data = json.loads(json.dumps(big_data))
-                return JsonResponse(json_data)
+                except:
+                    pass
+                if sv.i_d is not None:
+                    name = '''<a href="/client/show_instances/'''+sv.i_d+'''"><p>'''+sv.name+'''</p></a>'''
+                else:
+                    name = '<p>'+sv.name+'</p>'
+
+                ram = '<p>'+str(sv.ram)+'</p>'
+                vcpus = '<p>'+str(sv.vcpus)+'</p>'
+                disk = '<p>'+str(sv.disk)+'</p>'
+
+                created = '<p>'+str(sv.created)+'</p>'
+                data.append([name, ip, ram, vcpus, disk, status, created, actions])
+            big_data = {"data": data}
+            json_data = json.loads(json.dumps(big_data))
+            return JsonResponse(json_data)
+        else:
+            data = []
+            data.append(['<p></p>', '<p></p>', '<p></p>', '<p></p>', '<p></p>', '<p></p>', '<p></p>', '<p></p>'])
+            big_data = {"data": data}
+            json_data = json.loads(json.dumps(big_data))
+            return JsonResponse(json_data)
 
 def networks(request):
     user = request.user

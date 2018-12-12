@@ -70,30 +70,38 @@ $(document).ready(function(){
         }else if (action == 'resetpass'){
             $("body").on('click', '#resetpass_submit', function(){
                 var pass = $("input[name=resetpass]").val();
+                var pass2 = $("input[name=password2]").val();
+                if (pass == pass2){
                     swal({
-                            imageUrl: '/static/images/spinner-sample.gif',
-                            imageHeight: 120,
-                            imageAlt: 'wait',
-                            title: "Please wait...",
-                            title: "Please wait...",
-                            showConfirmButton: false
-                        });
-                $.ajax({
-                    type:'POST',
-                    url:location.href,
-                    data: {'resetpass':id, 'csrfmiddlewaretoken':token, 'pass': pass},
-                    success: function(msg){
-                        if (msg == 'Đã có lỗi xảy ra!'){
-                            swal({
-                                type: 'error',
-                                title: msg,
-                            });
-                        }else{
-                            document.getElementById("close_modal_resetpass").click();
-                            swal.close();
+                        imageUrl: '/static/images/spinner-sample.gif',
+                        imageHeight: 120,
+                        imageAlt: 'wait',
+                        title: "Please wait...",
+                        title: "Please wait...",
+                        showConfirmButton: false
+                    });
+                    $.ajax({
+                        type:'POST',
+                        url:location.href,
+                        data: {'resetpass':id, 'csrfmiddlewaretoken':token, 'pass': pass},
+                        success: function(msg){
+                            if (msg == 'Đã có lỗi xảy ra!'){
+                                swal({
+                                    type: 'error',
+                                    title: msg,
+                                });
+                            }else{
+                                document.getElementById("close_modal_resetpass").click();
+                                swal.close();
+                            }
                         }
-                    }
-                });
+                    });
+                }else{
+                    swal({
+                        type: 'warning',
+                        title: "Mat khau khong trung khop",
+                    });
+                }
             });
         }else if (action == 'backup'){
             $("body").on('click', '#backup_submit', function(){

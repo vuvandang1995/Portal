@@ -97,9 +97,9 @@ class Server(models.Model):
     ram = models.IntegerField()
     vcpus = models.IntegerField()
     disk = models.IntegerField()
-    status = models.IntegerField(default=1)
     owner = models.ForeignKey('Myuser', models.CASCADE, db_column='owner')
     created = models.CharField(max_length=255, null=True)
+    i_d = models.CharField(max_length=255, null=True)
 
     class Meta:
         managed = True
