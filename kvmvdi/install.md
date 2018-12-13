@@ -108,6 +108,23 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 ```
+
+### rqworker
+`sudo vim /etc/systemd/system/rqworker.service`
+```
+[Unit]
+Description=Django-RQ Worker
+After=network.target
+
+[Service]
+WorkingDirectory=/home/interuser/Portal/kvmvdi
+ExecStart=/usr/bin/python3.5 \
+    manage.py \
+    rqworker default
+
+[Install]
+WantedBy=multi-user.target
+```
 ### nginx
 `sudo vim /etc/nginx/sites-available/default`
 
