@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  nginx: 
+    build: ./nginx
+    depends_on:
+      - web
+    volumes:
+      - ./static:/static
+      - ./media:/home/media
+    ports:
+      - "443:443"
+      - "80:80"
+  db:
+    image: mysql:5.7
+    restart: always
+    expose:
+      - "3306"
+    volumes:
+      - ./dockermysql:/var/lib/mysql
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_DATABASE: kvm_vdi
+      MYSQL_ROOT_PASSWORD: 123456
+  rd:
+    image: redis:2:8
+    restart: always
+    expose:
+      - "6379"
+    volumes:
+      - ./dockerredis:/var/lib/redis
+  web:
+    build: .
+    volumes:
+      - ./kvmvdi:/home/kvm_vdi
+      - ./static:/static
+    expose:
+      - "8000"
+      - "8443"
+    depends_on:
+      - rd
+      - db

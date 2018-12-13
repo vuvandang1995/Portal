@@ -1,0 +1,14 @@
+FROM python:3
+MAINTAINER dangvv
+ENV PYTHONUNBUFFERD 1
+RUN apt-get update && apt-get install -y supervisor
+RUN apt-get install -y python3-pip
+RUN mkdir -p /var/log/supervisor
+COPY supervisord.conf /etc/supervisor/conf.d/
+RUN mkdir /home/kvm_vdi
+WORKDIR /home/kvm_vdi
+ADD requirements.txt /home/kvm_vdi/
+RUN pip3 install -r requirements.txt
+RUN pip3 uninstall redis
+RUN pip3 install redis==2.10.6
+CMD ["/usr/bin/supervisord"]
