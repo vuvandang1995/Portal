@@ -23,7 +23,7 @@ services:
       MYSQL_DATABASE: kvm_vdi
       MYSQL_ROOT_PASSWORD: 123456
   rd:
-    image: redis:2:8
+    image: redis:2.8
     restart: always
     expose:
       - "6379"
