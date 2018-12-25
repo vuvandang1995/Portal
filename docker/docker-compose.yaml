@@ -7,13 +7,13 @@ services:
       - web
     volumes:
       - type: volume
-          - source: default
-          target: /etc/nginx/conf.d/default.conf
-          volume:
-            nocopy: true
+        source: default
+        target: /etc/nginx/conf.d/default.conf
+        volume:
+          nocopy: true
       - type: bind
-          source: ./static
-          target: /static
+        source: ./static
+        target: /static
     ports:
       - "443:443"
       - "80:80"
