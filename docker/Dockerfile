@@ -5,6 +5,8 @@ RUN apt-get update && apt-get install -y supervisor
 RUN apt-get install -y python3-pip
 RUN mkdir -p /var/log/supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/
+COPY intercom.CERT.crt /etc/ssl/certs/
+COPY intercom.vn.PRIVATE.key /etc/ssl/private/
 RUN mkdir /home/kvm_vdi
 WORKDIR /home/kvm_vdi
 ADD requirements.txt /home/kvm_vdi/
