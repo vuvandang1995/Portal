@@ -6,7 +6,7 @@ services:
     depends_on:
       - web
     volumes:
-      - "type: volume"
+      - "type:volume"
         source: default
         target: /etc/nginx/conf.d/default.conf
         volume:
