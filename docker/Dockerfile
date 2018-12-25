@@ -1,7 +1,7 @@
 FROM python:3
 MAINTAINER dangvv
 ENV PYTHONUNBUFFERD 1
-RUN apt-get update && apt-get install -y supervisor
+RUN apt-get update && apt-get install -y supervisor vim
 RUN apt-get install -y python3-pip
 RUN mkdir -p /var/log/supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/
