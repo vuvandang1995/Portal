@@ -8,6 +8,7 @@ python-novaclient
 python-neutronclient
 python-keystoneclient
 python-cinderclient
+python-glanceclient
 django-cryptography
 cryptography
 django-rq
