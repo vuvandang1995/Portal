@@ -34,7 +34,7 @@ services:
       - ./kvmvdi:/home/kvmvdi
       - ./static:/static
     expose:
-      - "8888"
+      - "8889"
       - "8443"
     depends_on:
       - rd
