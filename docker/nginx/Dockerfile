@@ -4,7 +4,7 @@
 FROM nginx
 
 ENV LANG C.UTF-8
-RUN apt-get update; apt-get install -y openssl ping curl
+RUN apt-get update; apt-get install -y openssl curl
 #CMD ["nginx"]
 
 #RUN apt-get update -y 
