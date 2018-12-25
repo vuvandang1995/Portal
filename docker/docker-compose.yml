@@ -7,7 +7,6 @@ services:
       - web
     volumes:
       - ./static:/static
-      - ./media:/home/media
     ports:
       - "443:443"
       - "80:80"
