@@ -32,7 +32,7 @@ services:
   web:
     build: .
     volumes:
-      - ./kvmvdi:/home/kvm_vdi
+      - ./kvmvdi:/home/kvmvdi
       - ./static:/static
     expose:
       - "8000"
