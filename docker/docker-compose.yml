@@ -1,4 +1,4 @@
-version: '3'
+version: '3.2'
 
 services:
   nginx: 
@@ -6,7 +6,9 @@ services:
     depends_on:
       - web
     volumes:
-      - ./static:/static
+      - type: bind
+        source: ./static
+        target: /static
     ports:
       - "443:443"
       - "80:80"
