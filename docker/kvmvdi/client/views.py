@@ -583,6 +583,7 @@ def instances(request):
 
 def home_data(request):
     user = request.user
+    print(binascii.hexlify(os.urandom(4)).decode("utf-8"))
     if user.is_authenticated and user.is_adminkvm == False:
         thread = check_ping(host=OPS_IP)
         if thread.run():

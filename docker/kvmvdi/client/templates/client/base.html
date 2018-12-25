@@ -399,7 +399,7 @@
     var userName = {{ username }};
     var opsSocket = new WebSocket(
         'ws://' + window.location.host +
-        ':8443/ws/' + userName + '/');
+        '/ws/' + userName + '/');
 
     opsSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);

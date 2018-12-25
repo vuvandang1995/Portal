@@ -403,8 +403,8 @@
     var x = document.getElementById("myAudio");
     var userName = {{ username }};
     var opsSocket = new WebSocket(
-        'wss://' + window.location.host +
-        ':8443/ws/' + userName + '/');
+        'ws://' + window.location.host +
+        '/ws/' + userName + '/');
 
     function notiFunction() {
         if ($('body .noti_fy .point').length){
