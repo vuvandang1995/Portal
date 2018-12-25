@@ -188,14 +188,14 @@ server {
 
 ### restart serices
 ```
-systemctl restart gunicorn.service
-systemctl restart daphne.service 
-systemctl restart redis-server.service
-systemctl restart nginx.service
+sudo systemctl restart gunicorn.service
+sudo systemctl restart daphne.service 
+sudo systemctl restart redis-server.service
+sudo systemctl restart nginx.service
 
-systemctl enable gunicorn.service
-systemctl enable daphne.service 
-systemctl enable redis-server.service
+sudo systemctl enable gunicorn.service
+sudo systemctl enable daphne.service 
+sudo systemctl enable redis-server.service
 ```
 
 `python3 manage.py rqworker default`
