@@ -404,7 +404,7 @@
     var userName = {{ username }};
     var opsSocket = new WebSocket(
         'wss://' + window.location.host +
-        ':8443/ws/' + userName + '/');
+        '/ws/' + userName + '/');
 
     function notiFunction() {
         if ($('body .noti_fy .point').length){
