@@ -13,3 +13,4 @@ django-cryptography
 cryptography
 django-rq
 rq
+Twisted[tls,http2]
