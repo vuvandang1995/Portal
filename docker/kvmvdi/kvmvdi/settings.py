@@ -170,10 +170,10 @@ EMAIL_HOST_PASSWORD = 'meditech2018'
 EMAIL_PORT = 587
 
 
-OPS_IP = '192.168.40.11'
+OPS_IP = '10.10.10.99'
 # OPS_IP = '192.168.40.146'
 OPS_ADMIN = 'admin'
-OPS_PASSWORD = 'Welcome123'
+OPS_PASSWORD = 'ITC*123@654'
 # OPS_PASSWORD = 'admin'
 OPS_PROJECT = 'admin'
 OPS_TOKEN_EXPIRED = 1500
@@ -184,15 +184,15 @@ ROLE_ADMIN = 'admin'
 # ROLE_ADMIN = 'admin'
 
 # list_net_provider = ['public']
-list_net_provider = ['provider']
+list_net_provider = ['VLAN999', 'VLAN_699']
 NET_SELF = ''
 
 DISK_SSD = 'ceph-ssd'
 DISK_HDD = 'ceph-hdd'
 
-VNPAY_RETURN_URL = 'http://localhost:8000/payment_return'  # get from config
-VNPAY_PAYMENT_URL = 'http://sandbox.vnpayment.vn/paymentv2/vpcpay.html'  # get from config
-VNPAY_API_URL = 'http://sandbox.vnpayment.vn/merchant_webapi/merchant.html'
+VNPAY_RETURN_URL = 'https://portal.intercom.vn/payment_return'  # get from config
+VNPAY_PAYMENT_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'  # get from config
+VNPAY_API_URL = 'https://sandbox.vnpayment.vn/merchant_webapi/merchant.html'
 VNPAY_TMN_CODE = 'INTERCOM'  # Website ID in VNPAY System, get from config
 VNPAY_HASH_SECRET_KEY = 'REWEKUZMPNPFLYPPEEMYABEEDDYMKXFN'  # Secret key for create checksum,get from config
 
