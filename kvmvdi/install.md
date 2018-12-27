@@ -171,7 +171,7 @@ server {
                 proxy_pass https://0.0.0.0:8000;
         }
 
-        location /wss/ {
+        location /ws/ {
                 proxy_pass https://0.0.0.0:8443;
                 proxy_http_version 1.1;
                 proxy_set_header Upgrade $http_upgrade;
